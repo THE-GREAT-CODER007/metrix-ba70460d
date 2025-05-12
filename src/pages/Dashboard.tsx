@@ -1,62 +1,37 @@
+
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import StatCard from '@/components/dashboard/StatCard';
-import ChartCard from '@/components/dashboard/ChartCard';
-import TradeJournal, { TradeEntry } from '@/components/dashboard/TradeJournal';
-import PieChartWidget from '@/components/dashboard/PieChartWidget';
-import CandlestickChart from '@/components/dashboard/CandlestickChart';
 import WidgetManager, { Widget } from '@/components/dashboard/WidgetManager';
-import { CircleDollarSign, BookMarked, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
+import { TradeEntry } from '@/components/dashboard/TradeJournal';
 
-const revenueData = [
-  { name: 'Jan', value: 400 },
-  { name: 'Feb', value: 600 },
-  { name: 'Mar', value: 500 },
-  { name: 'Apr', value: 700 },
-  { name: 'May', value: 400 },
-  { name: 'Jun', value: 600 },
-  { name: 'Jul', value: 800 },
-  { name: 'Aug', value: 700 },
-];
+// Widget Components
+import StatsWidget from '@/components/dashboard/widgets/StatsWidget';
+import TradesWidget from '@/components/dashboard/widgets/TradesWidget';
+import ChartWidget from '@/components/dashboard/widgets/ChartWidget';
+import PieChartWidgetWrapper from '@/components/dashboard/widgets/PieChartWidgetWrapper';
+import CandlestickWidgetWrapper from '@/components/dashboard/widgets/CandlestickWidgetWrapper';
+import AreaChartWidget from '@/components/dashboard/widgets/AreaChartWidget';
+import MultiLineChartWidget from '@/components/dashboard/widgets/MultiLineChartWidget';
+import HeatmapWidget from '@/components/dashboard/widgets/HeatmapWidget';
 
-const satisfactionData = [
-  { name: 'Jan', value: 80 },
-  { name: 'Feb', value: 40 },
-  { name: 'Mar', value: 60 },
-  { name: 'Apr', value: 70 },
-  { name: 'May', value: 90 },
-  { name: 'Jun', value: 75 },
-  { name: 'Jul', value: 60 },
-  { name: 'Aug', value: 85 },
-];
+// Data
+import { 
+  revenueData, 
+  satisfactionData, 
+  volumeData, 
+  portfolioCompositionData,
+  candlestickData,
+  multiLineData,
+  tradesByHourData,
+  heatmapColorRanges,
+  allCryptoData,
+  weeklyReturnData,
+  riskProfileData
+} from '@/data/dashboardData';
 
-const volumeData = [
-  { name: 'Jan', value: 100 },
-  { name: 'Feb', value: 200 },
-  { name: 'Mar', value: 50 },
-  { name: 'Apr', value: 180 },
-  { name: 'May', value: 120 },
-  { name: 'Jun', value: 200 },
-];
-
-const portfolioCompositionData = [
-  { name: 'Technology', value: 35, color: '#4D7CFE' },
-  { name: 'Healthcare', value: 20, color: '#10B981' },
-  { name: 'Finance', value: 15, color: '#7C4DFE' },
-  { name: 'Consumer', value: 10, color: '#F59E0B' },
-  { name: 'Energy', value: 20, color: '#EC4899' }
-];
-
-const candlestickData = [
-  { date: 'Mon', open: 100, high: 110, low: 95, close: 105 },
-  { date: 'Tue', open: 105, high: 112, low: 101, close: 102 },
-  { date: 'Wed', open: 102, high: 108, low: 95, close: 107 },
-  { date: 'Thu', open: 107, high: 115, low: 105, close: 110 },
-  { date: 'Fri', open: 110, high: 118, low: 109, close: 116 }
-];
-
+// Initial data
 const initialTrades: TradeEntry[] = [
   {
     id: '1',
@@ -115,6 +90,10 @@ const availableWidgets: Widget[] = [
   { id: 'trades', type: 'trades', title: 'Latest Trades', size: 'full' },
   { id: 'portfolio-composition', type: 'chart', title: 'Portfolio Composition', size: 'medium' },
   { id: 'market-overview', type: 'chart', title: 'Market Overview', size: 'medium' },
+  { id: 'trading-activity', type: 'heatmap', title: 'Trading Activity', size: 'full' },
+  { id: 'crypto-comparison', type: 'multi-line', title: 'Crypto Comparison', size: 'medium' },
+  { id: 'weekly-return', type: 'area', title: 'Weekly Return', size: 'medium' },
+  { id: 'risk-profile', type: 'donut', title: 'Risk Profile', size: 'medium' },
 ];
 
 // Default active widgets
@@ -122,7 +101,10 @@ const defaultActiveWidgets: Widget[] = [
   { id: 'stats', type: 'stats', title: 'Trading Summary', size: 'full' },
   { id: 'portfolio-growth', type: 'chart', title: 'Portfolio Growth', size: 'medium' },
   { id: 'performance-trends', type: 'chart', title: 'Performance Trends', size: 'medium' },
+  { id: 'crypto-comparison', type: 'multi-line', title: 'Crypto Comparison', size: 'medium' },
+  { id: 'weekly-return', type: 'area', title: 'Weekly Return', size: 'medium' },
   { id: 'trades', type: 'trades', title: 'Latest Trades', size: 'full' },
+  { id: 'trading-activity', type: 'heatmap', title: 'Trading Activity', size: 'full' },
 ];
 
 const Dashboard = () => {
@@ -160,6 +142,10 @@ const Dashboard = () => {
   
   const handleAddWidget = (widget: Widget) => {
     setActiveWidgets([...activeWidgets, widget]);
+    toast({
+      title: "Widget added",
+      description: `${widget.title} has been added to your dashboard`,
+    });
   };
   
   const handleRemoveWidget = (widgetId: string) => {
@@ -178,112 +164,111 @@ const Dashboard = () => {
   const renderWidget = (widget: Widget) => {
     switch (widget.id) {
       case 'stats':
-        return (
-          <div key={widget.id} className="mb-8 w-full">
-            <h2 className="text-xl text-gray-400 mb-4">{widget.title}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <StatCard
-                title="Total Profit"
-                value="$5k"
-                description="Total Profits"
-                icon={<CircleDollarSign className="text-metrix-blue" size={18} />}
-                colorClass="bg-metrix-blue/10"
-              />
-              <StatCard
-                title="Total Orders"
-                value="300"
-                description="Total Orders"
-                icon={<BookMarked className="text-metrix-purple" size={18} />}
-                colorClass="bg-metrix-purple/10"
-              />
-              <StatCard
-                title="Assets"
-                value="5"
-                description="Trading Assets"
-                icon={<Package className="text-metrix-cyan" size={18} />}
-                colorClass="bg-metrix-cyan/10"
-              />
-            </div>
-          </div>
-        );
+        return <StatsWidget title={widget.title} />;
       
       case 'portfolio-growth':
         return (
-          <ChartCard
-            key={widget.id}
+          <ChartWidget
             title={widget.title}
             data={revenueData}
             type="bar"
             colors={{ stroke: '#4D7CFE' }}
-            className="mb-6"
           />
         );
       
       case 'performance-trends':
         return (
-          <ChartCard
-            key={widget.id}
+          <ChartWidget
             title={widget.title}
             data={satisfactionData}
             type="area"
             colors={{ stroke: '#00E1FF', fill: '#00E1FF' }}
-            className="mb-6"
           />
         );
       
       case 'win-loss':
         return (
-          <ChartCard
-            key={widget.id}
+          <ChartWidget
             title={widget.title}
             data={volumeData}
             type="bar"
             colors={{ stroke: '#7C4DFE' }}
-            className="mb-6"
           />
         );
       
       case 'daily-pnl':
         return (
-          <ChartCard
-            key={widget.id}
+          <ChartWidget
             title={widget.title}
             data={satisfactionData}
-            type="area"
-            colors={{ stroke: '#00E1FF', fill: '#00E1FF' }}
-            className="mb-6"
+            type="line"
+            colors={{ stroke: '#10B981' }}
           />
         );
       
       case 'trades':
         return (
-          <div key={widget.id} className="mb-6 w-full">
-            <TradeJournal 
-              trades={trades} 
-              onAdd={handleAddTrade}
-              onEdit={handleEditTrade}
-              onDelete={handleDeleteTrade}
-            />
-          </div>
+          <TradesWidget
+            title={widget.title}
+            trades={trades}
+            onAdd={handleAddTrade}
+            onEdit={handleEditTrade}
+            onDelete={handleDeleteTrade}
+          />
         );
       
       case 'portfolio-composition':
         return (
-          <PieChartWidget
-            key={widget.id}
+          <PieChartWidgetWrapper
             title={widget.title}
             data={portfolioCompositionData}
-            className="mb-6"
           />
         );
       
       case 'market-overview':
         return (
-          <CandlestickChart
-            key={widget.id}
+          <CandlestickWidgetWrapper
             title={widget.title}
             data={candlestickData}
-            className="mb-6"
+          />
+        );
+        
+      case 'trading-activity':
+        return (
+          <HeatmapWidget
+            title={widget.title}
+            data={tradesByHourData}
+            colorRanges={heatmapColorRanges}
+          />
+        );
+        
+      case 'crypto-comparison':
+        return (
+          <MultiLineChartWidget
+            title={widget.title}
+            data={allCryptoData}
+            lines={[
+              { dataKey: 'btc', stroke: '#F7931A', name: 'Bitcoin' },
+              { dataKey: 'eth', stroke: '#627EEA', name: 'Ethereum' },
+              { dataKey: 'sol', stroke: '#00FFA3', name: 'Solana' }
+            ]}
+          />
+        );
+        
+      case 'weekly-return':
+        return (
+          <AreaChartWidget
+            title={widget.title}
+            data={weeklyReturnData}
+            gradientColors={{ start: '#8B5CF6', end: 'rgba(139, 92, 246, 0.1)' }}
+          />
+        );
+        
+      case 'risk-profile':
+        return (
+          <PieChartWidgetWrapper
+            title={widget.title}
+            data={riskProfileData}
           />
         );
       
@@ -294,7 +279,7 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <h1 className="text-3xl font-bold mb-6">Today's Goals</h1>
+      <h1 className="text-3xl font-bold mb-6">Today's Overview</h1>
       
       <WidgetManager
         availableWidgets={availableWidgets}
