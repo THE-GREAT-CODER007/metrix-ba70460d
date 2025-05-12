@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MoreVertical, ArrowUp, ArrowDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MoreVertical, ArrowUp, ArrowDown, Edit, Trash2, Plus } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export interface TradeEntry {
   id: string;
@@ -15,16 +17,88 @@ export interface TradeEntry {
 
 interface TradeJournalProps {
   trades: TradeEntry[];
+  onAdd?: (trade: Omit<TradeEntry, 'id'>) => void;
+  onEdit?: (trade: TradeEntry) => void;
+  onDelete?: (id: string) => void;
 }
 
-const TradeJournal: React.FC<TradeJournalProps> = ({ trades }) => {
+const TradeJournal: React.FC<TradeJournalProps> = ({
+  trades,
+  onAdd,
+  onEdit,
+  onDelete,
+}) => {
+  const { toast } = useToast();
+  const [editMode, setEditMode] = useState<boolean>(false);
+  
+  const handleEdit = (trade: TradeEntry) => {
+    if (onEdit) {
+      onEdit(trade);
+      toast({
+        title: "Trade updated",
+        description: `${trade.symbol} trade has been updated`,
+      });
+    }
+  };
+  
+  const handleDelete = (id: string, symbol: string) => {
+    if (onDelete) {
+      onDelete(id);
+      toast({
+        title: "Trade deleted",
+        description: `${symbol} trade has been removed`,
+      });
+    }
+  };
+  
+  const handleAdd = () => {
+    if (onAdd) {
+      // This would normally open a modal or form
+      // For now we'll just create a sample trade
+      const newTrade = {
+        symbol: "NVDA",
+        type: "buy" as const,
+        price: 110.45,
+        quantity: 5,
+        date: new Date().toISOString().split('T')[0],
+        pnl: 0
+      };
+      
+      onAdd(newTrade);
+      toast({
+        title: "Trade added",
+        description: `New ${newTrade.symbol} trade has been added`,
+      });
+    }
+  };
+
   return (
     <Card className="bg-metrix-card border-gray-800">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-lg font-medium">Latest Trades</CardTitle>
-        <button className="text-gray-400 hover:text-white">
-          <MoreVertical size={20} />
-        </button>
+        <div className="flex items-center space-x-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setEditMode(!editMode)} 
+            className="text-gray-400 hover:text-white"
+          >
+            <Edit size={16} />
+          </Button>
+          {onAdd && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleAdd} 
+              className="text-gray-400 hover:text-white"
+            >
+              <Plus size={16} />
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+            <MoreVertical size={16} />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -37,6 +111,7 @@ const TradeJournal: React.FC<TradeJournalProps> = ({ trades }) => {
                 <th className="text-right py-3 px-4">Quantity</th>
                 <th className="text-right py-3 px-4">P&L</th>
                 <th className="text-right py-3 px-4">Date</th>
+                {editMode && <th className="text-right py-3 px-4">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -71,6 +146,28 @@ const TradeJournal: React.FC<TradeJournalProps> = ({ trades }) => {
                     ) : '-'}
                   </td>
                   <td className="py-4 px-4 text-right text-gray-400">{trade.date}</td>
+                  {editMode && (
+                    <td className="py-4 px-4 text-right">
+                      <div className="flex justify-end space-x-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleEdit(trade)}
+                          className="h-8 w-8 p-0 text-gray-400 hover:text-blue-500"
+                        >
+                          <Edit size={14} />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleDelete(trade.id, trade.symbol)}
+                          className="h-8 w-8 p-0 text-gray-400 hover:text-red-500"
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
