@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/dashboard/StatCard';
@@ -329,4 +328,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-</lov-add-dependency>uuid@latest</lov-add-dependency>
