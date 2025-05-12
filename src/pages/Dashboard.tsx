@@ -1,9 +1,8 @@
-
 import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/dashboard/StatCard';
 import ChartCard from '@/components/dashboard/ChartCard';
-import TradeJournal from '@/components/dashboard/TradeJournal';
+import TradeJournal, { TradeEntry } from '@/components/dashboard/TradeJournal';
 import { CircleDollarSign, BookMarked, Package } from 'lucide-react';
 
 const revenueData = [
@@ -37,11 +36,11 @@ const volumeData = [
   { name: 'Jun', value: 200 },
 ];
 
-const sampleTrades = [
+const sampleTrades: TradeEntry[] = [
   {
     id: '1',
     symbol: 'AAPL',
-    type: 'buy' as const,
+    type: 'buy',
     price: 165.23,
     quantity: 10,
     date: '2023-05-12',
@@ -50,7 +49,7 @@ const sampleTrades = [
   {
     id: '2',
     symbol: 'MSFT',
-    type: 'sell' as const,
+    type: 'sell',
     price: 325.75,
     quantity: 5,
     date: '2023-05-11',
@@ -59,7 +58,7 @@ const sampleTrades = [
   {
     id: '3',
     symbol: 'TSLA',
-    type: 'buy' as const,
+    type: 'buy',
     price: 183.45,
     quantity: 15,
     date: '2023-05-10',
@@ -68,7 +67,7 @@ const sampleTrades = [
   {
     id: '4',
     symbol: 'AMZN',
-    type: 'sell' as const,
+    type: 'sell',
     price: 105.87,
     quantity: 20,
     date: '2023-05-09',
@@ -77,7 +76,7 @@ const sampleTrades = [
   {
     id: '5',
     symbol: 'GOOG',
-    type: 'buy' as const,
+    type: 'buy',
     price: 125.30,
     quantity: 8,
     date: '2023-05-08',

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MoreVertical, ArrowUp, ArrowDown } from 'lucide-react';
 
-interface TradeEntry {
+export interface TradeEntry {
   id: string;
   symbol: string;
   type: 'buy' | 'sell';
