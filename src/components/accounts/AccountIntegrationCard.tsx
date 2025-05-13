@@ -3,20 +3,23 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Link } from "lucide-react";
+import { Link, ExternalLink, Database } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface AccountIntegrationCardProps {
   name: string;
   description: string;
   logo: string;
   onConnect: () => void;
+  status?: 'available' | 'connected' | 'maintenance';
 }
 
 const AccountIntegrationCard: React.FC<AccountIntegrationCardProps> = ({
   name,
   description,
   logo,
-  onConnect
+  onConnect,
+  status = 'available'
 }) => {
   return (
     <Card className="bg-metrix-card border-gray-800 hover:shadow-md hover:shadow-metrix-blue/10 transition-shadow">
@@ -26,18 +29,44 @@ const AccountIntegrationCard: React.FC<AccountIntegrationCardProps> = ({
             <AvatarImage src={logo} alt={name} />
             <AvatarFallback>{name.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
-          <CardTitle className="text-lg">{name}</CardTitle>
+          <div>
+            <CardTitle className="text-lg">{name}</CardTitle>
+            {status === 'connected' && (
+              <Badge className="bg-green-600 text-white text-xs mt-1">Connected</Badge>
+            )}
+            {status === 'maintenance' && (
+              <Badge className="bg-amber-500 text-white text-xs mt-1">Maintenance</Badge>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
         <p className="text-gray-400 mb-4">{description}</p>
-        <Button 
-          variant="outline" 
-          onClick={onConnect}
-          className="w-full border-metrix-blue text-metrix-blue hover:bg-metrix-blue hover:text-white"
-        >
-          <Link className="h-4 w-4 mr-2" /> Connect
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={onConnect}
+            className="flex-1 border-metrix-blue text-metrix-blue hover:bg-metrix-blue hover:text-white"
+            disabled={status === 'maintenance'}
+          >
+            {status === 'connected' ? (
+              <>
+                <Database className="h-4 w-4 mr-2" /> Sync Account
+              </>
+            ) : (
+              <>
+                <Link className="h-4 w-4 mr-2" /> Connect
+              </>
+            )}
+          </Button>
+          <Button 
+            variant="outline"
+            size="icon"
+            className="border-gray-700"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
