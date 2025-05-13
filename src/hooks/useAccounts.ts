@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 
 // Initial data should be imported from a data service in a real app
 // This is just for demonstration purposes
-const initialAccounts = [
+const initialAccounts: AccountType[] = [
   {
     id: '1',
     name: 'Interactive Brokers',
@@ -69,7 +69,7 @@ const initialAccounts = [
 ];
 
 // Initial integrations data
-const initialIntegrations = [
+const initialIntegrations: IntegrationType[] = [
   { 
     id: 'mt4',
     name: 'MetaTrader 4', 
@@ -154,6 +154,13 @@ const initialIntegrations = [
     status: 'available',
     logo: '/placeholder.svg',
   },
+  { 
+    id: 'fxblue',
+    name: 'FX Blue', 
+    description: 'FX Blue aggregator to connect to many brokers',
+    status: 'available',
+    logo: '/placeholder.svg',
+  },
 ];
 
 const defaultFormData = {
@@ -177,6 +184,9 @@ export const useAccounts = () => {
   const [editingAccount, setEditingAccount] = useState<null | AccountType>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [formData, setFormData] = useState(defaultFormData);
+  const [isOAuthDialogOpen, setIsOAuthDialogOpen] = useState(false);
+  const [selectedIntegration, setSelectedIntegration] = useState<string | null>(null);
+  const [syncProgress, setSyncProgress] = useState<Record<string, number>>({});
 
   const filteredAccounts = activeFilter 
     ? accountsList.filter(account => account.classification === activeFilter)
@@ -192,13 +202,13 @@ export const useAccounts = () => {
       return;
     }
 
-    const newAccount = {
+    const newAccount: AccountType = {
       id: Date.now().toString(),
       name: formData.name,
       type: formData.type,
       balance: parseFloat(formData.balance),
       currency: formData.currency,
-      status: 'active',
+      status: 'active', 
       classification: formData.classification,
       logo: '/placeholder.svg',
     };
@@ -270,18 +280,76 @@ export const useAccounts = () => {
   };
 
   const handleIntegrationConnect = (integrationId: string) => {
+    const integration = integrations.find(i => i.id === integrationId);
+    
+    // For oauth-based brokers, open the auth flow
+    if (['ib', 'tradovate', 'ninjatrader', 'ctrader', 'rethmic', 'binance'].includes(integrationId)) {
+      setSelectedIntegration(integrationId);
+      setIsOAuthDialogOpen(true);
+      return;
+    }
+
     toast({
       title: "Connecting to Integration",
-      description: `Connecting to ${integrations.find(i => i.id === integrationId)?.name}...`,
+      description: `Connecting to ${integration?.name}...`,
     });
     
-    // Simulate an OAuth flow
+    // Simulate an API connection
     setTimeout(() => {
       toast({
         title: "Integration Connected",
-        description: `Successfully connected to ${integrations.find(i => i.id === integrationId)?.name}`,
+        description: `Successfully connected to ${integration?.name}`,
       });
+
+      // Start auto-sync progress simulation
+      startSyncProgress(integrationId);
     }, 2000);
+  };
+
+  const handleOAuthConnect = () => {
+    if (!selectedIntegration) return;
+    
+    const integration = integrations.find(i => i.id === selectedIntegration);
+    
+    // In a real app, this would redirect to broker's OAuth page
+    toast({
+      title: "OAuth Flow Initiated",
+      description: `Redirecting to ${integration?.name} login...`,
+    });
+    
+    // Simulate OAuth success after delay
+    setTimeout(() => {
+      toast({
+        title: "Authorization Successful",
+        description: `Connected to ${integration?.name}. Fetching accounts...`,
+      });
+      
+      // Simulate account discovery
+      setTimeout(() => {
+        // Create a new account from the connection
+        const newAccount: AccountType = {
+          id: Date.now().toString(),
+          name: `${integration?.name} Account`,
+          type: 'Margin',
+          balance: 15000 + Math.random() * 5000,
+          currency: 'USD',
+          status: 'active',
+          classification: 'real',
+          logo: '/placeholder.svg',
+        };
+        
+        setAccountsList([...accountsList, newAccount]);
+        setIsOAuthDialogOpen(false);
+        
+        toast({
+          title: "Account Imported",
+          description: "Your trading account has been successfully imported",
+        });
+        
+        // Start auto-sync progress simulation
+        startSyncProgress(newAccount.id);
+      }, 2000);
+    }, 3000);
   };
 
   const handleStatusToggle = (id: string) => {
@@ -307,13 +375,55 @@ export const useAccounts = () => {
       description: "Syncing account data from broker...",
     });
     
+    // Start sync progress simulation
+    startSyncProgress(id);
+    
     // Simulate a sync delay
     setTimeout(() => {
+      // Update account with "new" data
+      const updatedAccounts = accountsList.map(account => 
+        account.id === id ? {
+          ...account,
+          balance: account.balance * (1 + (Math.random() * 0.02 - 0.01)) // +/- 1%
+        } : account
+      );
+      
+      setAccountsList(updatedAccounts);
+      
       toast({
         title: "Account Synced",
         description: "Account data successfully updated",
       });
-    }, 2000);
+      
+      // Clear progress
+      setSyncProgress(prev => ({
+        ...prev,
+        [id]: 100
+      }));
+    }, 3000);
+  };
+
+  const startSyncProgress = (id: string) => {
+    // Reset progress
+    setSyncProgress(prev => ({
+      ...prev,
+      [id]: 0
+    }));
+    
+    // Simulate progress updates
+    const interval = setInterval(() => {
+      setSyncProgress(prev => {
+        const currentProgress = prev[id] || 0;
+        if (currentProgress >= 100) {
+          clearInterval(interval);
+          return prev;
+        }
+        return {
+          ...prev,
+          [id]: Math.min(currentProgress + 10, 100)
+        };
+      });
+    }, 300);
   };
 
   const handleAutoSyncToggle = (id: string) => {
@@ -338,11 +448,16 @@ export const useAccounts = () => {
     activeFilter,
     formData,
     setFormData,
+    isOAuthDialogOpen,
+    setIsOAuthDialogOpen,
+    selectedIntegration,
+    syncProgress,
     handleAddAccount,
     handleEditAccount,
     handleDeleteAccount,
     handleEditClick,
     handleIntegrationConnect,
+    handleOAuthConnect,
     handleStatusToggle,
     handleSyncAccount,
     handleAutoSyncToggle,

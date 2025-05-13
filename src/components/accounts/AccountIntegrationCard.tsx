@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Link, ExternalLink, Database } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -12,6 +13,7 @@ interface AccountIntegrationCardProps {
   logo: string;
   onConnect: () => void;
   status?: 'available' | 'connected' | 'maintenance';
+  syncProgress?: number;
 }
 
 const AccountIntegrationCard: React.FC<AccountIntegrationCardProps> = ({
@@ -19,7 +21,8 @@ const AccountIntegrationCard: React.FC<AccountIntegrationCardProps> = ({
   description,
   logo,
   onConnect,
-  status = 'available'
+  status = 'available',
+  syncProgress,
 }) => {
   return (
     <Card className="bg-metrix-card border-gray-800 hover:shadow-md hover:shadow-metrix-blue/10 transition-shadow">
@@ -42,12 +45,20 @@ const AccountIntegrationCard: React.FC<AccountIntegrationCardProps> = ({
       </CardHeader>
       <CardContent>
         <p className="text-gray-400 mb-4">{description}</p>
+        
+        {syncProgress !== undefined && syncProgress > 0 && syncProgress < 100 && (
+          <div className="mb-3">
+            <Progress value={syncProgress} className="h-1 bg-metrix-navy" />
+            <p className="text-xs text-gray-400 mt-1">Synchronizing... {syncProgress}%</p>
+          </div>
+        )}
+        
         <div className="flex gap-2">
           <Button 
             variant="outline" 
             onClick={onConnect}
             className="flex-1 border-metrix-blue text-metrix-blue hover:bg-metrix-blue hover:text-white"
-            disabled={status === 'maintenance'}
+            disabled={status === 'maintenance' || (syncProgress !== undefined && syncProgress > 0 && syncProgress < 100)}
           >
             {status === 'connected' ? (
               <>

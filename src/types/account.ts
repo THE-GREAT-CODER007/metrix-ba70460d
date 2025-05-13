@@ -17,3 +17,17 @@ export type IntegrationType = {
   status: 'available' | 'connected' | 'maintenance';
   logo: string;
 };
+
+export type SyncStatus = {
+  lastSync: string;
+  nextSync: string;
+  isAutoSync: boolean;
+  interval: number;
+};
+
+export type BrokerOAuthConfig = {
+  authUrl: string;
+  clientId: string;
+  redirectUri: string;
+  scope: string;
+};

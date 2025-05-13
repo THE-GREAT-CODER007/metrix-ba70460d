@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import { Edit, Trash2, RefreshCcw } from "lucide-react";
 import { AccountType } from '@/types/account';
 import { getClassificationIcon } from '@/utils/accountUtils';
@@ -16,6 +17,7 @@ interface AccountCardProps {
   onStatusToggle: (id: string) => void;
   onSync: (id: string) => void;
   onAutoSyncToggle: (id: string) => void;
+  syncProgress?: number;
 }
 
 const AccountCard: React.FC<AccountCardProps> = ({
@@ -24,7 +26,8 @@ const AccountCard: React.FC<AccountCardProps> = ({
   onDelete,
   onStatusToggle,
   onSync,
-  onAutoSyncToggle
+  onAutoSyncToggle,
+  syncProgress
 }) => {
   return (
     <Card key={account.id} className="bg-metrix-card border-gray-800">
@@ -87,9 +90,11 @@ const AccountCard: React.FC<AccountCardProps> = ({
               variant="outline" 
               size="sm"
               onClick={() => onSync(account.id)}
+              disabled={syncProgress !== undefined && syncProgress > 0 && syncProgress < 100}
               className="text-metrix-cyan hover:text-white hover:bg-metrix-cyan"
             >
-              <RefreshCcw className="h-4 w-4 mr-1" /> Sync
+              <RefreshCcw className={`h-4 w-4 mr-1 ${syncProgress !== undefined && syncProgress > 0 && syncProgress < 100 ? 'animate-spin' : ''}`} /> 
+              Sync
             </Button>
             <Button 
               variant="outline" 
@@ -108,6 +113,13 @@ const AccountCard: React.FC<AccountCardProps> = ({
             </Button>
           </div>
         </div>
+        
+        {syncProgress !== undefined && syncProgress > 0 && syncProgress < 100 && (
+          <div className="mt-4">
+            <Progress value={syncProgress} className="h-1 bg-metrix-navy" />
+            <p className="text-xs text-gray-400 mt-1">Synchronizing account data... {syncProgress}%</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

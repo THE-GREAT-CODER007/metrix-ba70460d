@@ -18,6 +18,7 @@ interface AccountTabsProps {
   onSync: (id: string) => void;
   onAutoSyncToggle: (id: string) => void;
   onIntegrationConnect: (id: string) => void;
+  syncProgress?: Record<string, number>;
 }
 
 const AccountTabs: React.FC<AccountTabsProps> = ({
@@ -30,7 +31,8 @@ const AccountTabs: React.FC<AccountTabsProps> = ({
   onStatusToggle,
   onSync,
   onAutoSyncToggle,
-  onIntegrationConnect
+  onIntegrationConnect,
+  syncProgress = {}
 }) => {
   return (
     <Tabs defaultValue="accounts" className="mb-6">
@@ -55,6 +57,7 @@ const AccountTabs: React.FC<AccountTabsProps> = ({
                 onStatusToggle={onStatusToggle}
                 onSync={onSync}
                 onAutoSyncToggle={onAutoSyncToggle}
+                syncProgress={syncProgress[account.id]}
               />
             ))
           ) : (
@@ -71,7 +74,9 @@ const AccountTabs: React.FC<AccountTabsProps> = ({
               name={integration.name}
               description={integration.description}
               logo={integration.logo}
+              status={integration.status}
               onConnect={() => onIntegrationConnect(integration.id)}
+              syncProgress={syncProgress[integration.id]}
             />
           ))}
         </div>

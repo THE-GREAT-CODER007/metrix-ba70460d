@@ -7,6 +7,7 @@ import { PlusCircle } from "lucide-react";
 import { useAccounts } from '@/hooks/useAccounts';
 import AccountForm from '@/components/accounts/AccountForm';
 import AccountTabs from '@/components/accounts/AccountTabs';
+import OAuthConnectionDialog from '@/components/accounts/OAuthConnectionDialog';
 
 const Accounts = () => {
   const {
@@ -19,16 +20,24 @@ const Accounts = () => {
     activeFilter,
     formData,
     setFormData,
+    isOAuthDialogOpen,
+    setIsOAuthDialogOpen,
+    selectedIntegration,
+    syncProgress,
     handleAddAccount,
     handleEditAccount,
     handleDeleteAccount,
     handleEditClick,
     handleIntegrationConnect,
+    handleOAuthConnect,
     handleStatusToggle,
     handleSyncAccount,
     handleAutoSyncToggle,
     handleFilterChange,
   } = useAccounts();
+
+  // Find the selected integration name for the OAuth dialog
+  const selectedIntegrationName = integrations.find(i => i.id === selectedIntegration)?.name || 'Broker';
 
   return (
     <DashboardLayout>
@@ -72,6 +81,14 @@ const Accounts = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        
+        {/* OAuth Connection Dialog */}
+        <OAuthConnectionDialog 
+          isOpen={isOAuthDialogOpen}
+          onClose={() => setIsOAuthDialogOpen(false)}
+          onConnect={handleOAuthConnect}
+          integrationName={selectedIntegrationName}
+        />
       </div>
 
       <AccountTabs
@@ -85,6 +102,7 @@ const Accounts = () => {
         onSync={handleSyncAccount}
         onAutoSyncToggle={handleAutoSyncToggle}
         onIntegrationConnect={handleIntegrationConnect}
+        syncProgress={syncProgress}
       />
     </DashboardLayout>
   );
