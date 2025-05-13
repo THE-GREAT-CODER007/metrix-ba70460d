@@ -1,3 +1,5 @@
+// src/components/ui/Sidebar.tsx
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -12,24 +14,22 @@ import {
   Settings,
   ArrowLeftRight,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
 } from 'lucide-react';
 
-const Sidebar = () => {
+const Sidebar: React.FC = () => {
   const location = useLocation();
 
-  // Load collapse state from localStorage
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const stored = localStorage.getItem('sidebar-collapsed');
     return stored ? JSON.parse(stored) : false;
   });
 
-  // Save collapse state to localStorage
   useEffect(() => {
     localStorage.setItem('sidebar-collapsed', JSON.stringify(isCollapsed));
   }, [isCollapsed]);
 
-  const toggleSidebar = () => setIsCollapsed(prev => !prev);
+  const toggleSidebar = () => setIsCollapsed((prev) => !prev);
 
   const menuItems = [
     { name: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
@@ -59,7 +59,7 @@ const Sidebar = () => {
         </button>
       </div>
 
-      {/* Menu Items */}
+      {/* Menu */}
       <div className="flex flex-col flex-1 py-6 px-2">
         {menuItems.map((item) => (
           <Link
