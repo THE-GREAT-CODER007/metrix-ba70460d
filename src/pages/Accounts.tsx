@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -714,7 +713,6 @@ const Accounts = () => {
                             checked={true} 
                             onCheckedChange={() => handleAutoSyncToggle(account.id)}
                             className="data-[state=checked]:bg-metrix-cyan"
-                            size="sm"
                           />
                           <span className="text-sm">Every 60 min</span>
                         </div>

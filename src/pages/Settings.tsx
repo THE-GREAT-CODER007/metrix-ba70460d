@@ -1,87 +1,64 @@
 
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Settings as SettingsIcon, User, Bell, Shield, Key, Smartphone } from "lucide-react";
+import {
+  Bell,
+  Lock,
+  User,
+  CreditCard,
+  Settings as SettingsIcon,
+  LogOut,
+  Trash2,
+  Mail,
+  Phone,
+  Shield,
+  Zap,
+  LineChart,
+  Clock,
+  Repeat,
+  CheckCircle2
+} from "lucide-react";
 
 const Settings = () => {
   const { toast } = useToast();
-  
-  const [profileForm, setProfileForm] = useState({
-    fullName: 'Alex Johnson',
-    email: 'alex@example.com',
-    username: 'alextrader',
-    bio: 'Professional trader with 5+ years experience in forex and crypto markets',
-    avatarUrl: '/placeholder.svg'
-  });
-  
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailAlerts: true,
-    tradingAlerts: true,
-    marketNews: false,
-    priceAlerts: true,
-    soundAlerts: true,
-    pushNotifications: true
-  });
-  
-  const [apiSettings, setApiSettings] = useState({
-    defaultLeverage: '1:100',
-    defaultRiskPerTrade: '1%',
-    tradingSessionStart: '09:30',
-    tradingSessionEnd: '16:00',
-    timezone: 'America/New_York',
-    chartTimeframe: '1h'
-  });
-  
-  const [securitySettings, setSecuritySettings] = useState({
-    twoFactorAuth: false,
-    sessionTimeout: '30',
-    loginAlerts: true,
-    ipRestriction: false,
-  });
-  
+  const [timeframe, setTimeframe] = useState('1h');
+
   const handleSaveProfile = () => {
     toast({
-      title: "Profile Updated",
+      title: "Profile Saved",
       description: "Your profile information has been updated successfully",
     });
   };
-  
+
   const handleSaveNotifications = () => {
     toast({
-      title: "Notification Settings Updated",
-      description: "Your notification preferences have been saved",
+      title: "Notification Settings Saved",
+      description: "Your notification preferences have been updated",
     });
   };
-  
-  const handleSaveApiSettings = () => {
+
+  const handleSaveTrading = () => {
     toast({
-      title: "Trading Settings Updated",
-      description: "Your trading preferences have been saved",
+      title: "Trading Settings Saved",
+      description: "Your trading preferences have been updated",
     });
   };
-  
+
   const handleSaveSecurity = () => {
     toast({
-      title: "Security Settings Updated",
-      description: "Your security settings have been saved",
-    });
-  };
-  
-  const handleEnableTwoFactor = () => {
-    setSecuritySettings({...securitySettings, twoFactorAuth: true});
-    toast({
-      title: "Two-Factor Authentication",
-      description: "2FA has been enabled for your account",
+      title: "Security Settings Saved",
+      description: "Your security settings have been updated",
     });
   };
   
@@ -90,445 +67,290 @@ const Settings = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Settings</h1>
       </div>
-      
-      <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="bg-metrix-navy border-gray-800 mb-6 grid grid-cols-4 w-full md:w-auto">
-          <TabsTrigger value="profile" className="flex items-center gap-2">
-            <User className="h-4 w-4" /> Profile
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <Bell className="h-4 w-4" /> Notifications
-          </TabsTrigger>
-          <TabsTrigger value="trading" className="flex items-center gap-2">
-            <SettingsIcon className="h-4 w-4" /> Trading
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" /> Security
-          </TabsTrigger>
+
+      <Tabs defaultValue="profile" className="space-y-4">
+        <TabsList className="bg-metrix-navy border-gray-800 grid grid-cols-4 w-full md:w-auto">
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="trading">Trading</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="profile">
+        <TabsContent value="profile" className="space-y-4">
           <Card className="bg-metrix-card border-gray-800">
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Personal Information
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row gap-8">
-                <div className="flex-1">
-                  <div className="grid gap-6">
-                    <div className="grid gap-2">
-                      <Label htmlFor="fullName">Full Name</Label>
-                      <Input 
-                        id="fullName"
-                        value={profileForm.fullName}
-                        onChange={(e) => setProfileForm({...profileForm, fullName: e.target.value})}
-                        className="bg-metrix-navy border-gray-800"
-                      />
-                    </div>
-                    
-                    <div className="grid gap-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input 
-                        id="email"
-                        type="email"
-                        value={profileForm.email}
-                        onChange={(e) => setProfileForm({...profileForm, email: e.target.value})}
-                        className="bg-metrix-navy border-gray-800"
-                      />
-                    </div>
-                    
-                    <div className="grid gap-2">
-                      <Label htmlFor="username">Username</Label>
-                      <Input 
-                        id="username"
-                        value={profileForm.username}
-                        onChange={(e) => setProfileForm({...profileForm, username: e.target.value})}
-                        className="bg-metrix-navy border-gray-800"
-                      />
-                    </div>
-                    
-                    <div className="grid gap-2">
-                      <Label htmlFor="bio">Bio</Label>
-                      <Input 
-                        id="bio"
-                        value={profileForm.bio}
-                        onChange={(e) => setProfileForm({...profileForm, bio: e.target.value})}
-                        className="bg-metrix-navy border-gray-800"
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex flex-col items-center">
-                  <Avatar className="h-32 w-32 mb-4">
-                    <AvatarImage src={profileForm.avatarUrl} alt="Profile picture" />
-                    <AvatarFallback>{profileForm.fullName.slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <Button variant="outline" className="mb-2">Upload Photo</Button>
-                  <Button variant="link" className="text-red-400">Remove Photo</Button>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-6">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage src="/placeholder.svg" />
+                  <AvatarFallback>JD</AvatarFallback>
+                </Avatar>
+                <div>
+                  <Button variant="outline" className="mb-2">Change Avatar</Button>
+                  <p className="text-sm text-gray-400">Recommended: 400x400px, Max 2MB</p>
                 </div>
               </div>
               
-              <div className="mt-8">
-                <Button onClick={handleSaveProfile} className="bg-metrix-blue hover:bg-blue-700">
-                  Save Changes
-                </Button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input id="firstName" defaultValue="John" className="mt-1 bg-metrix-navy border-gray-800" />
+                </div>
+                <div>
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input id="lastName" defaultValue="Doe" className="mt-1 bg-metrix-navy border-gray-800" />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input id="email" type="email" defaultValue="john.doe@example.com" className="mt-1 bg-metrix-navy border-gray-800" />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input id="phone" defaultValue="+1 (555) 123-4567" className="mt-1 bg-metrix-navy border-gray-800" />
+                </div>
+                <div className="col-span-2">
+                  <Label htmlFor="bio">Bio</Label>
+                  <Input id="bio" className="mt-1 bg-metrix-navy border-gray-800" defaultValue="Trader with 5 years of experience in forex and cryptocurrency markets." />
+                </div>
+              </div>
+              
+              <Separator className="my-4 bg-gray-800" />
+              
+              <div className="flex justify-end">
+                <Button variant="outline" className="mr-2">Cancel</Button>
+                <Button onClick={handleSaveProfile} className="bg-metrix-blue hover:bg-blue-700">Save Changes</Button>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
         
-        <TabsContent value="notifications">
+        <TabsContent value="notifications" className="space-y-4">
           <Card className="bg-metrix-card border-gray-800">
             <CardHeader>
-              <CardTitle>Notification Preferences</CardTitle>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Notification Preferences
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-6">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium">Email Alerts</h3>
-                    <p className="text-sm text-gray-400">Receive important alerts via email</p>
+                    <h3 className="font-medium flex items-center">
+                      <Mail className="h-4 w-4 mr-2" />
+                      Email Notifications
+                    </h3>
+                    <p className="text-sm text-gray-400">Receive email notifications</p>
                   </div>
-                  <Switch 
-                    checked={notificationSettings.emailAlerts}
-                    onCheckedChange={(checked) => setNotificationSettings({...notificationSettings, emailAlerts: checked})}
-                    className="data-[state=checked]:bg-metrix-cyan"
-                  />
+                  <Switch className="data-[state=checked]:bg-metrix-cyan" />
                 </div>
+                
                 <Separator className="bg-gray-800" />
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium">Trading Alerts</h3>
-                    <p className="text-sm text-gray-400">Get notifications about your trades</p>
+                    <h3 className="font-medium flex items-center">
+                      <LineChart className="h-4 w-4 mr-2" />
+                      Trading Alerts
+                    </h3>
+                    <p className="text-sm text-gray-400">Price movements and trade signals</p>
                   </div>
-                  <Switch 
-                    checked={notificationSettings.tradingAlerts}
-                    onCheckedChange={(checked) => setNotificationSettings({...notificationSettings, tradingAlerts: checked})}
-                    className="data-[state=checked]:bg-metrix-cyan"
-                  />
+                  <Switch defaultChecked className="data-[state=checked]:bg-metrix-cyan" />
                 </div>
+                
                 <Separator className="bg-gray-800" />
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium">Market News</h3>
-                    <p className="text-sm text-gray-400">Receive market news and updates</p>
+                    <h3 className="font-medium flex items-center">
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      Order Confirmations
+                    </h3>
+                    <p className="text-sm text-gray-400">When orders are executed</p>
                   </div>
-                  <Switch 
-                    checked={notificationSettings.marketNews}
-                    onCheckedChange={(checked) => setNotificationSettings({...notificationSettings, marketNews: checked})}
-                    className="data-[state=checked]:bg-metrix-cyan"
-                  />
+                  <Switch defaultChecked className="data-[state=checked]:bg-metrix-cyan" />
                 </div>
+                
                 <Separator className="bg-gray-800" />
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium">Price Alerts</h3>
-                    <p className="text-sm text-gray-400">Get alerts when prices hit your targets</p>
+                    <h3 className="font-medium flex items-center">
+                      <Zap className="h-4 w-4 mr-2" />
+                      System Updates
+                    </h3>
+                    <p className="text-sm text-gray-400">New features and maintenance</p>
                   </div>
-                  <Switch 
-                    checked={notificationSettings.priceAlerts}
-                    onCheckedChange={(checked) => setNotificationSettings({...notificationSettings, priceAlerts: checked})}
-                    className="data-[state=checked]:bg-metrix-cyan"
-                  />
+                  <Switch defaultChecked className="data-[state=checked]:bg-metrix-cyan" />
                 </div>
-                <Separator className="bg-gray-800" />
                 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">Sound Alerts</h3>
-                    <p className="text-sm text-gray-400">Play sound for important notifications</p>
-                  </div>
-                  <Switch 
-                    checked={notificationSettings.soundAlerts}
-                    onCheckedChange={(checked) => setNotificationSettings({...notificationSettings, soundAlerts: checked})}
-                    className="data-[state=checked]:bg-metrix-cyan"
-                  />
-                </div>
-                <Separator className="bg-gray-800" />
+                <Separator className="my-4 bg-gray-800" />
                 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">Push Notifications</h3>
-                    <p className="text-sm text-gray-400">Receive push notifications on your device</p>
-                  </div>
-                  <Switch 
-                    checked={notificationSettings.pushNotifications}
-                    onCheckedChange={(checked) => setNotificationSettings({...notificationSettings, pushNotifications: checked})}
-                    className="data-[state=checked]:bg-metrix-cyan"
-                  />
+                <div className="flex justify-end">
+                  <Button variant="outline" className="mr-2">Reset Defaults</Button>
+                  <Button onClick={handleSaveNotifications} className="bg-metrix-blue hover:bg-blue-700">Save Preferences</Button>
                 </div>
-              </div>
-              
-              <div className="mt-8">
-                <Button onClick={handleSaveNotifications} className="bg-metrix-blue hover:bg-blue-700">
-                  Save Preferences
-                </Button>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
         
-        <TabsContent value="trading">
+        <TabsContent value="trading" className="space-y-4">
           <Card className="bg-metrix-card border-gray-800">
             <CardHeader>
-              <CardTitle>Trading Settings</CardTitle>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <SettingsIcon className="h-5 w-5" />
+                Trading Preferences
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="grid gap-2">
-                    <Label htmlFor="defaultLeverage">Default Leverage</Label>
-                    <Select 
-                      value={apiSettings.defaultLeverage}
-                      onValueChange={(value) => setApiSettings({...apiSettings, defaultLeverage: value})}
-                    >
-                      <SelectTrigger id="defaultLeverage" className="bg-metrix-navy border-gray-800">
-                        <SelectValue placeholder="Default Leverage" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-metrix-navy border-gray-800">
-                        <SelectItem value="1:1">1:1</SelectItem>
-                        <SelectItem value="1:5">1:5</SelectItem>
-                        <SelectItem value="1:10">1:10</SelectItem>
-                        <SelectItem value="1:20">1:20</SelectItem>
-                        <SelectItem value="1:50">1:50</SelectItem>
-                        <SelectItem value="1:100">1:100</SelectItem>
-                        <SelectItem value="1:200">1:200</SelectItem>
-                        <SelectItem value="1:500">1:500</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label htmlFor="defaultRiskPerTrade">Default Risk Per Trade</Label>
-                    <Select 
-                      value={apiSettings.defaultRiskPerTrade}
-                      onValueChange={(value) => setApiSettings({...apiSettings, defaultRiskPerTrade: value})}
-                    >
-                      <SelectTrigger id="defaultRiskPerTrade" className="bg-metrix-navy border-gray-800">
-                        <SelectValue placeholder="Default Risk Per Trade" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-metrix-navy border-gray-800">
-                        <SelectItem value="0.5%">0.5%</SelectItem>
-                        <SelectItem value="1%">1%</SelectItem>
-                        <SelectItem value="2%">2%</SelectItem>
-                        <SelectItem value="3%">3%</SelectItem>
-                        <SelectItem value="5%">5%</SelectItem>
-                        <SelectItem value="10%">10%</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="grid gap-2">
-                    <Label htmlFor="tradingSessionStart">Trading Session Start</Label>
-                    <Input 
-                      id="tradingSessionStart"
-                      type="time"
-                      value={apiSettings.tradingSessionStart}
-                      onChange={(e) => setApiSettings({...apiSettings, tradingSessionStart: e.target.value})}
-                      className="bg-metrix-navy border-gray-800"
-                    />
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label htmlFor="tradingSessionEnd">Trading Session End</Label>
-                    <Input 
-                      id="tradingSessionEnd"
-                      type="time"
-                      value={apiSettings.tradingSessionEnd}
-                      onChange={(e) => setApiSettings({...apiSettings, tradingSessionEnd: e.target.value})}
-                      className="bg-metrix-navy border-gray-800"
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="grid gap-2">
-                    <Label htmlFor="timezone">Timezone</Label>
-                    <Select 
-                      value={apiSettings.timezone}
-                      onValueChange={(value) => setApiSettings({...apiSettings, timezone: value})}
-                    >
-                      <SelectTrigger id="timezone" className="bg-metrix-navy border-gray-800">
-                        <SelectValue placeholder="Timezone" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-metrix-navy border-gray-800">
-                        <SelectItem value="America/New_York">New York (EST/EDT)</SelectItem>
-                        <SelectItem value="Europe/London">London (GMT/BST)</SelectItem>
-                        <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
-                        <SelectItem value="Australia/Sydney">Sydney (AEST/AEDT)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label htmlFor="chartTimeframe">Default Chart Timeframe</Label>
-                    <Select 
-                      value={apiSettings.chartTimeframe}
-                      onValueChange={(value) => setApiSettings({...apiSettings, chartTimeframe: value})}
-                    >
-                      <SelectTrigger id="chartTimeframe" className="bg-metrix-navy border-gray-800">
-                        <SelectValue placeholder="Chart Timeframe" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-metrix-navy border-gray-800">
-                        <SelectItem value="1m">1 Minute</SelectItem>
-                        <SelectItem value="5m">5 Minutes</SelectItem>
-                        <SelectItem value="15m">15 Minutes</SelectItem>
-                        <SelectItem value="30m">30 Minutes</SelectItem>
-                        <SelectItem value="1h">1 Hour</SelectItem>
-                        <SelectItem value="4h">4 Hours</SelectItem>
-                        <SelectItem value="1d">Daily</SelectItem>
-                        <SelectItem value="1w">Weekly</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-8">
-                <Button onClick={handleSaveApiSettings} className="bg-metrix-blue hover:bg-blue-700">
-                  Save Settings
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="security">
-          <Card className="bg-metrix-card border-gray-800">
-            <CardHeader>
-              <CardTitle>Security Settings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">Two-Factor Authentication</h3>
-                    <p className="text-sm text-gray-400">Add an extra layer of security to your account</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Switch 
-                      checked={securitySettings.twoFactorAuth}
-                      onCheckedChange={(checked) => setSecuritySettings({...securitySettings, twoFactorAuth: checked})}
-                      className="data-[state=checked]:bg-metrix-cyan"
-                    />
-                    {!securitySettings.twoFactorAuth && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={handleEnableTwoFactor}
-                        className="text-metrix-cyan border-metrix-cyan hover:bg-metrix-cyan hover:text-white"
-                      >
-                        <Key className="h-4 w-4 mr-2" /> Setup
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                <Separator className="bg-gray-800" />
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">Session Timeout</h3>
-                    <p className="text-sm text-gray-400">Automatically log out after inactivity</p>
-                  </div>
-                  <Select 
-                    value={securitySettings.sessionTimeout}
-                    onValueChange={(value) => setSecuritySettings({...securitySettings, sessionTimeout: value})}
-                    className="w-[180px]"
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="default-timeframe">Default Chart Timeframe</Label>
+                  <Select
+                    value={timeframe}
+                    onValueChange={setTimeframe}
                   >
-                    <SelectTrigger className="bg-metrix-navy border-gray-800">
-                      <SelectValue placeholder="Session Timeout" />
+                    <SelectTrigger id="default-timeframe" className="mt-1 bg-metrix-navy border-gray-800">
+                      <SelectValue placeholder="Select timeframe" />
                     </SelectTrigger>
                     <SelectContent className="bg-metrix-navy border-gray-800">
-                      <SelectItem value="10">10 minutes</SelectItem>
-                      <SelectItem value="30">30 minutes</SelectItem>
-                      <SelectItem value="60">1 hour</SelectItem>
-                      <SelectItem value="120">2 hours</SelectItem>
-                      <SelectItem value="never">Never</SelectItem>
+                      <SelectItem value="1m">1 Minute</SelectItem>
+                      <SelectItem value="5m">5 Minutes</SelectItem>
+                      <SelectItem value="15m">15 Minutes</SelectItem>
+                      <SelectItem value="30m">30 Minutes</SelectItem>
+                      <SelectItem value="1h">1 Hour</SelectItem>
+                      <SelectItem value="4h">4 Hours</SelectItem>
+                      <SelectItem value="1d">1 Day</SelectItem>
+                      <SelectItem value="1w">1 Week</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium flex items-center">
+                      <Clock className="h-4 w-4 mr-2" />
+                      Auto-sync Trading Data
+                    </h3>
+                    <p className="text-sm text-gray-400">Automatically sync account data</p>
+                  </div>
+                  <Switch defaultChecked className="data-[state=checked]:bg-metrix-cyan" />
+                </div>
+                
+                <Separator className="bg-gray-800" />
+                
+                <div>
+                  <Label htmlFor="sync-interval">Sync Interval</Label>
+                  <Select defaultValue="60">
+                    <SelectTrigger id="sync-interval" className="mt-1 bg-metrix-navy border-gray-800">
+                      <SelectValue placeholder="Select interval" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-metrix-navy border-gray-800">
+                      <SelectItem value="5">5 Minutes</SelectItem>
+                      <SelectItem value="15">15 Minutes</SelectItem>
+                      <SelectItem value="30">30 Minutes</SelectItem>
+                      <SelectItem value="60">1 Hour</SelectItem>
+                      <SelectItem value="360">6 Hours</SelectItem>
+                      <SelectItem value="720">12 Hours</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
                 <Separator className="bg-gray-800" />
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium">Login Alerts</h3>
-                    <p className="text-sm text-gray-400">Get notified of new login attempts</p>
+                    <h3 className="font-medium flex items-center">
+                      <Repeat className="h-4 w-4 mr-2" />
+                      Auto Close Trades
+                    </h3>
+                    <p className="text-sm text-gray-400">Close trades at the end of day</p>
                   </div>
-                  <Switch 
-                    checked={securitySettings.loginAlerts}
-                    onCheckedChange={(checked) => setSecuritySettings({...securitySettings, loginAlerts: checked})}
-                    className="data-[state=checked]:bg-metrix-cyan"
-                  />
+                  <Switch className="data-[state=checked]:bg-metrix-cyan" />
                 </div>
+                
+                <Separator className="my-4 bg-gray-800" />
+                
+                <div className="flex justify-end">
+                  <Button variant="outline" className="mr-2">Reset Defaults</Button>
+                  <Button onClick={handleSaveTrading} className="bg-metrix-blue hover:bg-blue-700">Save Preferences</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="security" className="space-y-4">
+          <Card className="bg-metrix-card border-gray-800">
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Lock className="h-5 w-5" />
+                Security Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-medium">Change Password</h3>
+                  <div className="grid gap-3 mt-2">
+                    <div>
+                      <Label htmlFor="current-password">Current Password</Label>
+                      <Input id="current-password" type="password" className="mt-1 bg-metrix-navy border-gray-800" />
+                    </div>
+                    <div>
+                      <Label htmlFor="new-password">New Password</Label>
+                      <Input id="new-password" type="password" className="mt-1 bg-metrix-navy border-gray-800" />
+                    </div>
+                    <div>
+                      <Label htmlFor="confirm-password">Confirm New Password</Label>
+                      <Input id="confirm-password" type="password" className="mt-1 bg-metrix-navy border-gray-800" />
+                    </div>
+                  </div>
+                </div>
+                
                 <Separator className="bg-gray-800" />
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium">IP Restriction</h3>
-                    <p className="text-sm text-gray-400">Limit account access to specific IP addresses</p>
+                    <h3 className="font-medium flex items-center">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Two-Factor Authentication
+                    </h3>
+                    <p className="text-sm text-gray-400">Add an extra layer of security</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Switch 
-                      checked={securitySettings.ipRestriction}
-                      onCheckedChange={(checked) => setSecuritySettings({...securitySettings, ipRestriction: checked})}
-                      className="data-[state=checked]:bg-metrix-cyan"
-                    />
-                    {securitySettings.ipRestriction && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                      >
-                        Configure
-                      </Button>
-                    )}
-                  </div>
+                  <Switch className="data-[state=checked]:bg-metrix-cyan" />
                 </div>
+                
                 <Separator className="bg-gray-800" />
                 
                 <div className="pt-2">
-                  <h3 className="font-medium">Connected Devices</h3>
-                  <p className="text-sm text-gray-400 mb-4">Devices that are currently logged into your account</p>
+                  <h3 className="font-medium text-red-500">Danger Zone</h3>
+                  <p className="text-sm text-gray-400 mb-3 mt-1">Permanent actions that cannot be undone</p>
                   
-                  <div className="space-y-4">
-                    <div className="bg-metrix-navy border border-gray-800 p-4 rounded-md flex justify-between items-center">
-                      <div className="flex items-center">
-                        <Smartphone className="h-8 w-8 mr-3 text-metrix-cyan" />
-                        <div>
-                          <h4 className="font-medium">iPhone 13 Pro</h4>
-                          <p className="text-xs text-gray-400">Last active: 2 minutes ago • New York, USA</p>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm" className="text-red-500 hover:bg-red-500 hover:text-white">
-                        Revoke
-                      </Button>
-                    </div>
-                    
-                    <div className="bg-metrix-navy border border-gray-800 p-4 rounded-md flex justify-between items-center">
-                      <div className="flex items-center">
-                        <Smartphone className="h-8 w-8 mr-3 text-metrix-cyan" />
-                        <div>
-                          <h4 className="font-medium">MacBook Pro</h4>
-                          <p className="text-xs text-gray-400">Last active: Now • Current device</p>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm" disabled className="opacity-50">
-                        Current
-                      </Button>
-                    </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button variant="outline" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Account
+                    </Button>
+                    <Button variant="outline" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Revoke All Sessions
+                    </Button>
                   </div>
                 </div>
-              </div>
-              
-              <div className="mt-8">
-                <Button onClick={handleSaveSecurity} className="bg-metrix-blue hover:bg-blue-700">
-                  Save Security Settings
-                </Button>
+                
+                <Separator className="my-4 bg-gray-800" />
+                
+                <div className="flex justify-end">
+                  <Button variant="outline" className="mr-2">Cancel</Button>
+                  <Button onClick={handleSaveSecurity} className="bg-metrix-blue hover:bg-blue-700">Save Changes</Button>
+                </div>
               </div>
             </CardContent>
           </Card>
