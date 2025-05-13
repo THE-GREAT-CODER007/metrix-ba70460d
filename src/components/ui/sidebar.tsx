@@ -1,271 +1,84 @@
-// src/components/ui/sidebar.tsx
-
-import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
-import { VariantProps, cva } from "class-variance-authority";
-import { PanelLeft } from "lucide-react";
-
-import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Skeleton } from "@/components/ui/skeleton";
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  LayoutDashboard,
+  Users,
+  LineChart,
+  BookText,
+  BarChart3,
+  Terminal,
+  AreaChart,
+  Newspaper,
+  Settings,
+  ArrowLeftRight,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
 
-const SIDEBAR_COOKIE_NAME = "sidebar:state";
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const SIDEBAR_WIDTH = "16rem";
-const SIDEBAR_WIDTH_MOBILE = "18rem";
-const SIDEBAR_WIDTH_ICON = "3rem";
-const DEFAULT_KEYBOARD_SHORTCUT = "b"; // Default shortcut (can be overridden)
+const Sidebar = () => {
+  const location = useLocation();
 
-/**
- * SidebarContext defines the state and actions for sidebar management.
- */
-type SidebarContext = {
-  state: "expanded" | "collapsed";
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  openMobile: boolean;
-  setOpenMobile: (open: boolean) => void;
-  isMobile: boolean;
-  toggleSidebar: () => void;
+  // Load collapse state from localStorage
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const stored = localStorage.getItem('sidebar-collapsed');
+    return stored ? JSON.parse(stored) : false;
+  });
+
+  // Save collapse state to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebar-collapsed', JSON.stringify(isCollapsed));
+  }, [isCollapsed]);
+
+  const toggleSidebar = () => setIsCollapsed(prev => !prev);
+
+  const menuItems = [
+    { name: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
+    { name: 'Accounts', icon: <Users size={20} />, path: '/accounts' },
+    { name: 'Strategy', icon: <LineChart size={20} />, path: '/strategy' },
+    { name: 'Backtesting', icon: <ArrowLeftRight size={20} />, path: '/backtesting' },
+    { name: 'Journal', icon: <BookText size={20} />, path: '/journal' },
+    { name: 'Performance', icon: <BarChart3 size={20} />, path: '/performance' },
+    { name: 'Analytics', icon: <AreaChart size={20} />, path: '/analytics' },
+    { name: 'News', icon: <Newspaper size={20} />, path: '/news' },
+    { name: 'Terminal', icon: <Terminal size={20} />, path: '/terminal' },
+    { name: 'Settings', icon: <Settings size={20} />, path: '/settings' },
+  ];
+
+  return (
+    <div className={`min-h-screen border-r border-gray-800 bg-metrix-navy flex flex-col transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-800">
+        <Link to="/" className="flex items-center gap-3">
+          <div className="h-10 w-10">
+            <img src="/logo.svg" alt="Metrix Logo" className="h-full w-full" />
+          </div>
+          {!isCollapsed && <span className="font-bold text-2xl tracking-wider text-white">METRIX</span>}
+        </Link>
+        <button onClick={toggleSidebar} className="text-gray-400 hover:text-white">
+          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        </button>
+      </div>
+
+      {/* Menu Items */}
+      <div className="flex flex-col flex-1 py-6 px-2">
+        {menuItems.map((item) => (
+          <Link
+            key={item.name}
+            to={item.path}
+            title={isCollapsed ? item.name : ''}
+            className={`flex items-center gap-3 px-4 py-3 rounded-md mb-1 transition-colors ${
+              location.pathname === item.path
+                ? 'bg-metrix-blue/10 text-metrix-blue'
+                : 'text-gray-400 hover:bg-metrix-blue/5 hover:text-gray-300'
+            }`}
+          >
+            {item.icon}
+            {!isCollapsed && <span>{item.name}</span>}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
 };
 
-const SidebarContext = React.createContext<SidebarContext | null>(null);
-
-/**
- * useSidebar provides access to the sidebar context.
- * Throws an error if used outside of SidebarProvider.
- */
-function useSidebar() {
-  const context = React.useContext(SidebarContext);
-  if (!context) {
-    throw new Error(
-      "useSidebar must be used within a SidebarProvider. Wrap your components with <SidebarProvider>."
-    );
-  }
-
-  return context;
-}
-
-const SidebarProvider = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div"> & {
-    defaultOpen?: boolean;
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
-    keyboardShortcut?: string; // Optional customizable shortcut
-  }
->(
-  (
-    {
-      defaultOpen = true,
-      open: openProp,
-      onOpenChange: setOpenProp,
-      className,
-      style,
-      children,
-      keyboardShortcut = DEFAULT_KEYBOARD_SHORTCUT, // Allow shortcut customization
-      ...props
-    },
-    ref
-  ) => {
-    const isMobile = useIsMobile();
-    const [openMobile, setOpenMobile] = React.useState(false);
-
-    // Internal state for sidebar
-    const [_open, _setOpen] = React.useState(defaultOpen);
-    const open = openProp ?? _open;
-    const setOpen = React.useCallback(
-      (value: boolean | ((value: boolean) => boolean)) => {
-        const openState = typeof value === "function" ? value(open) : value;
-        if (setOpenProp) {
-          setOpenProp(openState);
-        } else {
-          _setOpen(openState);
-        }
-
-        // Use localStorage instead of cookies for better security & simplicity
-        localStorage.setItem(SIDEBAR_COOKIE_NAME, JSON.stringify(openState));
-      },
-      [setOpenProp, open]
-    );
-
-    // Toggle sidebar between expanded and collapsed
-    const toggleSidebar = React.useCallback(() => {
-      return isMobile
-        ? setOpenMobile((open) => !open)
-        : setOpen((open) => !open);
-    }, [isMobile, setOpen, setOpenMobile]);
-
-    // Add keyboard shortcut to toggle sidebar
-    React.useEffect(() => {
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (
-          event.key === keyboardShortcut &&
-          (event.metaKey || event.ctrlKey)
-        ) {
-          event.preventDefault();
-          toggleSidebar();
-        }
-      };
-
-      window.addEventListener("keydown", handleKeyDown);
-      return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [toggleSidebar, keyboardShortcut]);
-
-    const state = open ? "expanded" : "collapsed";
-
-    const contextValue = React.useMemo<SidebarContext>(
-      () => ({
-        state,
-        open,
-        setOpen,
-        isMobile,
-        openMobile,
-        setOpenMobile,
-        toggleSidebar,
-      }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
-    );
-
-    return (
-      <SidebarContext.Provider value={contextValue}>
-        <TooltipProvider delayDuration={0}>
-          <div
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH,
-                "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
-                ...style,
-              } as React.CSSProperties
-            }
-            className={cn(
-              "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
-              className
-            )}
-            ref={ref}
-            {...props}
-          >
-            {children}
-          </div>
-        </TooltipProvider>
-      </SidebarContext.Provider>
-    );
-  }
-);
-SidebarProvider.displayName = "SidebarProvider";
-
-/**
- * Sidebar component renders the main sidebar structure.
- */
-const Sidebar = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div"> & {
-    side?: "left" | "right";
-    variant?: "sidebar" | "floating" | "inset";
-    collapsible?: "offcanvas" | "icon" | "none";
-  }
->(
-  (
-    {
-      side = "left",
-      variant = "sidebar",
-      collapsible = "offcanvas",
-      className,
-      children,
-      ...props
-    },
-    ref
-  ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-
-    if (collapsible === "none") {
-      return (
-        <div
-          className={cn(
-            "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
-            className
-          )}
-          ref={ref}
-          {...props}
-        >
-          {children}
-        </div>
-      );
-    }
-
-    if (isMobile) {
-      return (
-        <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
-          <SheetContent
-            data-sidebar="sidebar"
-            data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              } as React.CSSProperties
-            }
-            side={side}
-          >
-            <div className="flex h-full w-full flex-col">{children}</div>
-          </SheetContent>
-        </Sheet>
-      );
-    }
-
-    return (
-      <div
-        ref={ref}
-        className="group peer hidden md:block text-sidebar-foreground"
-        data-state={state}
-        data-collapsible={state === "collapsed" ? collapsible : ""}
-        data-variant={variant}
-        data-side={side}
-      >
-        <div
-          className={cn(
-            "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
-            "group-data-[collapsible=offcanvas]:w-0",
-            "group-data-[side=right]:rotate-180",
-            variant === "floating" || variant === "inset"
-              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
-          )}
-        />
-        <div
-          className={cn(
-            "duration-200 fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear md:flex",
-            side === "left"
-              ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
-              : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
-            variant === "floating" || variant === "inset"
-              ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
-            className
-          )}
-          {...props}
-        >
-          <div
-            data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border"
-          >
-            {children}
-          </div>
-        </div>
-      </div>
-    );
-  }
-);
-Sidebar.displayName = "Sidebar";
-
-export { Sidebar, SidebarProvider, useSidebar };
+export default Sidebar;
