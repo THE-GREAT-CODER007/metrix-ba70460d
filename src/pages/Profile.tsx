@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -13,8 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { User, CheckCircle2, Key, Zap, Calendar, Lock, Bell } from 'lucide-react';
-import { Switch } from "@/components/ui/switch";
+import { User, CheckCircle2, Key, Zap, Calendar, Lock, Bell, Clock, Switch } from 'lucide-react';
 
 // Define avatar options - animated avatars
 const avatarOptions = [
