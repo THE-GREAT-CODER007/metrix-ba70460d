@@ -12,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { User, CheckCircle2, Key, Zap, Calendar, Lock, Bell, Clock, Switch } from 'lucide-react';
+import { User, CheckCircle2, Key, Zap, Calendar, Lock, Bell, Clock, Twitch } from 'lucide-react';
+import { Switch } from "@/components/ui/switch";
 
 // Define avatar options - animated avatars
 const avatarOptions = [
