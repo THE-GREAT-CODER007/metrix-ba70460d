@@ -5,7 +5,7 @@ import { useToast } from './use-toast';
 export const useSyncService = () => {
   const { toast } = useToast();
   const [syncProgress, setSyncProgress] = useState<Record<string, number>>({});
-  const [syncTimers, setSyncTimers] = useState<Record<string, NodeJS.Timer>>({});
+  const [syncTimers, setSyncTimers] = useState<Record<string, NodeJS.Timeout>>({});
   
   const startSyncProgress = (id: string) => {
     // Reset progress
