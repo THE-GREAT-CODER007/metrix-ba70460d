@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { Search, Calendar as CalendarIcon, Bell, Filter } from "lucide-react";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 // News data types
 type NewsItem = {
@@ -23,7 +24,7 @@ type NewsItem = {
   category: string;
   impact: string;
   url: string;
-  imageUrl?: string; // Changed from image to imageUrl to fix the error
+  imageUrl: string;
 };
 
 type EconomicEvent = {
@@ -37,7 +38,7 @@ type EconomicEvent = {
   actual: string;
 };
 
-// Sample news data
+// Sample news data with actual financial news images
 const newsData: NewsItem[] = [
   {
     id: "1",
@@ -48,7 +49,7 @@ const newsData: NewsItem[] = [
     category: "Central Banks",
     impact: "high",
     url: "https://www.bloomberg.com",
-    imageUrl: "/placeholder.svg"
+    imageUrl: "https://www.investors.com/wp-content/uploads/2022/09/Stock-FederalReserve-07-shutter.jpg"
   },
   {
     id: "2",
@@ -59,7 +60,7 @@ const newsData: NewsItem[] = [
     category: "Central Banks",
     impact: "high",
     url: "https://www.ft.com",
-    imageUrl: "/placeholder.svg"
+    imageUrl: "https://www.ecb.europa.eu/shared/img/background-images/ecb-building-sunset.jpg"
   },
   {
     id: "3",
@@ -70,7 +71,7 @@ const newsData: NewsItem[] = [
     category: "Commodities",
     impact: "medium",
     url: "https://www.reuters.com",
-    imageUrl: "/placeholder.svg"
+    imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh9_WXV2SbQ5D6wnnYGbJ1wue4VcsqyHMtpyd7nBu_&s"
   },
   {
     id: "4",
@@ -81,7 +82,7 @@ const newsData: NewsItem[] = [
     category: "Forex",
     impact: "medium",
     url: "https://www.cnbc.com",
-    imageUrl: "/placeholder.svg"
+    imageUrl: "https://fm-static.cnbc.com/awsmedia/chart/2023/10/11/image%20(20).1697044637468.jpg"
   },
   {
     id: "5",
@@ -92,7 +93,7 @@ const newsData: NewsItem[] = [
     category: "Stocks",
     impact: "medium",
     url: "https://www.wsj.com",
-    imageUrl: "/placeholder.svg"
+    imageUrl: "https://media.marketrealist.com/brand-img/TaE_bdFRr/0x0/tech-stocks-1-1652417652453.jpg"
   },
   {
     id: "6",
@@ -103,7 +104,7 @@ const newsData: NewsItem[] = [
     category: "Central Banks",
     impact: "high",
     url: "https://www.nikkei.com",
-    imageUrl: "/placeholder.svg"
+    imageUrl: "https://www.nippon.com/en/ncommon/contents/guide-to-japan/1437171/1437171.jpg"
   },
   {
     id: "7",
@@ -114,7 +115,7 @@ const newsData: NewsItem[] = [
     category: "Economic Data",
     impact: "medium",
     url: "https://www.bbc.com",
-    imageUrl: "/placeholder.svg"
+    imageUrl: "https://ichef.bbci.co.uk/news/976/cpsprodpb/A0E0/production/_122197511_gettyimages-1356990363.jpg"
   },
 ];
 
@@ -204,6 +205,8 @@ const assetCategories = [
   { label: "Crypto", value: "Crypto" },
   { label: "Indices", value: "Indices" },
   { label: "Bonds", value: "Bonds" },
+  { label: "Central Banks", value: "Central Banks" },
+  { label: "Economic Data", value: "Economic Data" },
 ];
 
 // Impact levels
@@ -224,6 +227,7 @@ const countries = [
   { label: "Australia", value: "Australia" },
   { label: "Canada", value: "Canada" },
   { label: "China", value: "China" },
+  { label: "Egypt", value: "Egypt" },
 ];
 
 const News = () => {
@@ -233,6 +237,15 @@ const News = () => {
   const [selectedImpact, setSelectedImpact] = useState("all");
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date());
   const [selectedCountry, setSelectedCountry] = useState("all");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading delay
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Filter news based on search and filters
   const filteredNews = newsData.filter(item => {
@@ -256,6 +269,27 @@ const News = () => {
       (selectedCountry === "all" || item.country === selectedCountry)
     );
   });
+
+  // Function to get impact color
+  const getImpactColor = (impact: string) => {
+    switch (impact) {
+      case "high": return "bg-red-500";
+      case "medium": return "bg-yellow-500";
+      case "low": return "bg-green-500";
+      default: return "bg-gray-500";
+    }
+  };
+
+  // Function to compare actual vs forecast
+  const compareValues = (actual: string, forecast: string) => {
+    const actualNum = parseFloat(actual.replace('%', ''));
+    const forecastNum = parseFloat(forecast.replace('%', ''));
+    
+    if (isNaN(actualNum) || isNaN(forecastNum)) return "";
+    
+    return actualNum > forecastNum ? "text-green-500" :
+           actualNum < forecastNum ? "text-red-500" : "";
+  };
 
   return (
     <DashboardLayout>
@@ -336,39 +370,67 @@ const News = () => {
             </CardHeader>
             
             <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {filteredNews.length > 0 ? (
-                  filteredNews.map(item => (
-                    <Card key={item.id} className="overflow-hidden border border-gray-800 hover:border-metrix-blue transition-all">
+              {loading ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {[1, 2, 3, 4].map(i => (
+                    <Card key={i} className="overflow-hidden border border-gray-800 animate-pulse">
                       <div className="flex h-full">
-                        {item.imageUrl && (
-                          <div className="w-1/4 bg-gray-800 flex-shrink-0">
-                            <img 
-                              src={item.imageUrl} 
-                              alt={item.title} 
-                              className="h-full w-full object-cover"
-                            />
+                        <div className="w-1/3 bg-gray-800 h-[180px]"></div>
+                        <div className="w-2/3 p-4">
+                          <div className="h-4 bg-gray-800 rounded mb-4 w-3/4"></div>
+                          <div className="h-3 bg-gray-700 rounded mb-2"></div>
+                          <div className="h-3 bg-gray-700 rounded mb-2 w-4/5"></div>
+                          <div className="h-3 bg-gray-700 rounded mb-4 w-1/2"></div>
+                          <div className="flex justify-between mt-4">
+                            <div className="h-3 bg-gray-800 rounded w-1/4"></div>
+                            <div className="h-3 bg-gray-800 rounded w-1/5"></div>
                           </div>
-                        )}
-                        <div className={item.imageUrl ? "w-3/4 p-4" : "w-full p-4"}>
-                          <div className="flex justify-between items-start mb-2">
-                            <Badge 
-                              className={
-                                item.impact === "high" ? "bg-red-500" : 
-                                item.impact === "medium" ? "bg-yellow-500" : "bg-green-500"
-                              }
-                            >
-                              {item.impact} impact
-                            </Badge>
-                            <span className="text-xs text-gray-400">{item.time}</span>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {filteredNews.length > 0 ? (
+                    filteredNews.map(item => (
+                      <Card key={item.id} className="overflow-hidden border border-gray-800 hover:border-metrix-blue transition-all duration-300 group">
+                        <div className="flex flex-col h-full">
+                          <div className="w-full h-40 relative">
+                            <AspectRatio ratio={16/9} className="bg-gray-800 h-full">
+                              <img 
+                                src={item.imageUrl} 
+                                alt={item.title} 
+                                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            </AspectRatio>
+                            <div className="absolute top-2 right-2">
+                              <Badge className={`${getImpactColor(item.impact)} text-white shadow-lg`}>
+                                {item.impact} impact
+                              </Badge>
+                            </div>
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                              <div className="flex justify-between text-xs">
+                                <span className="font-semibold px-2 py-0.5 bg-metrix-navy/70 rounded-full text-white">
+                                  {item.category}
+                                </span>
+                                <span className="text-white flex items-center gap-1 text-xs">
+                                  <Clock className="w-3 h-3" />
+                                  {item.time}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <h3 className="font-bold mb-2 line-clamp-2">{item.title}</h3>
-                          <p className="text-sm text-gray-400 mb-2 line-clamp-2">{item.summary}</p>
-                          <div className="flex justify-between items-center mt-auto">
-                            <span className="text-xs font-medium bg-gray-800 px-2 py-1 rounded-full">
-                              {item.category}
-                            </span>
-                            <span className="text-xs text-metrix-blue">{item.source}</span>
+                          <div className="p-4 flex-1 flex flex-col">
+                            <h3 className="font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">{item.title}</h3>
+                            <p className="text-sm text-gray-400 mb-4 line-clamp-2 flex-1">{item.summary}</p>
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="text-xs text-metrix-blue font-medium">{item.source}</span>
+                              <Button variant="link" size="sm" className="text-xs p-0">
+                                Read more
+                                <ArrowRight className="ml-1 h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
                           <a 
                             href={item.url} 
@@ -380,15 +442,15 @@ const News = () => {
                             <span className="sr-only">Read more</span>
                           </a>
                         </div>
-                      </div>
-                    </Card>
-                  ))
-                ) : (
-                  <div className="col-span-2 text-center py-10 text-gray-400">
-                    No news matching your search criteria
-                  </div>
-                )}
-              </div>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="col-span-2 text-center py-10 text-gray-400">
+                      No news matching your search criteria
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -459,28 +521,32 @@ const News = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredEconomicData.length > 0 ? (
+                    {loading ? (
+                      [1, 2, 3, 4].map(i => (
+                        <tr key={i} className="border-b border-gray-800">
+                          <td className="p-3"><div className="h-4 bg-gray-800 animate-pulse rounded w-20"></div></td>
+                          <td className="p-3"><div className="h-4 bg-gray-800 animate-pulse rounded w-24"></div></td>
+                          <td className="p-3"><div className="h-4 bg-gray-800 animate-pulse rounded w-40"></div></td>
+                          <td className="p-3 text-center"><div className="h-4 bg-gray-800 animate-pulse rounded w-16 mx-auto"></div></td>
+                          <td className="p-3 text-right"><div className="h-4 bg-gray-800 animate-pulse rounded w-12 ml-auto"></div></td>
+                          <td className="p-3 text-right"><div className="h-4 bg-gray-800 animate-pulse rounded w-12 ml-auto"></div></td>
+                          <td className="p-3 text-right"><div className="h-4 bg-gray-800 animate-pulse rounded w-12 ml-auto"></div></td>
+                        </tr>
+                      ))
+                    ) : filteredEconomicData.length > 0 ? (
                       filteredEconomicData.map(event => (
-                        <tr key={event.id} className="border-b border-gray-800 hover:bg-gray-900/40">
+                        <tr key={event.id} className="border-b border-gray-800 hover:bg-gray-900/40 transition-colors">
                           <td className="p-3">{event.date}</td>
                           <td className="p-3">{event.country}</td>
                           <td className="p-3 font-medium">{event.title}</td>
                           <td className="p-3 text-center">
-                            <Badge 
-                              className={
-                                event.impact === "high" ? "bg-red-500" : 
-                                event.impact === "medium" ? "bg-yellow-500" : "bg-green-500"
-                              }
-                            >
+                            <Badge className={getImpactColor(event.impact)}>
                               {event.impact}
                             </Badge>
                           </td>
                           <td className="p-3 text-right">{event.previous}</td>
                           <td className="p-3 text-right">{event.forecast}</td>
-                          <td className={`p-3 text-right font-medium ${
-                            event.actual > event.forecast ? "text-green-500" :
-                            event.actual < event.forecast ? "text-red-500" : ""
-                          }`}>
+                          <td className={`p-3 text-right font-medium ${compareValues(event.actual, event.forecast)}`}>
                             {event.actual}
                           </td>
                         </tr>

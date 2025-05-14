@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,9 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
-import { useContext } from 'react';
-import { ThemeContext } from '@/context/ThemeContext';
+import { useToast } from "@/components/ui/use-toast";
+import { useTheme } from '@/context/ThemeContext';
 import {
   LineChart,
   Clock,
@@ -27,7 +27,7 @@ import {
 const Settings = () => {
   const { toast } = useToast();
   const [timeframe, setTimeframe] = useState('1h');
-  const { theme, setTheme } = useContext(ThemeContext);
+  const { theme, setTheme } = useTheme();
   const [fontSize, setFontSize] = useState('medium');
   const [fontFamily, setFontFamily] = useState('system-ui');
 
@@ -36,8 +36,6 @@ const Settings = () => {
       title: "Preferences Saved",
       description: "Your preferences have been updated successfully",
     });
-    document.documentElement.style.fontSize = getFontSizeValue();
-    document.body.style.fontFamily = fontFamily;
   };
 
   const handleSaveTrading = () => {
@@ -80,10 +78,11 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="preferences" className="space-y-4">
-        <TabsList className="bg-metrix-navy border-gray-800 grid grid-cols-3 w-full md:w-auto">
+        <TabsList className="bg-metrix-navy border-gray-800 grid grid-cols-4 w-full md:w-auto">
           <TabsTrigger value="preferences">Preferences</TabsTrigger>
           <TabsTrigger value="trading">Trading</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="appearance">Appearance</TabsTrigger>
         </TabsList>
         
         <TabsContent value="preferences" className="space-y-4">
@@ -147,14 +146,6 @@ const Settings = () => {
               
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Display Options</h3>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-base">Dark Mode</Label>
-                    <p className="text-gray-400 text-sm">Use dark theme throughout the application</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
                 
                 <div className="flex items-center justify-between">
                   <div>
@@ -371,7 +362,7 @@ const Settings = () => {
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Theme</h3>
                 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   <div 
                     className={`p-4 rounded-md cursor-pointer border-2 ${theme === 'dark' ? 'border-metrix-blue' : 'border-transparent'} bg-[#1A1F2C] flex flex-col items-center gap-2 transition-all duration-200 hover:scale-105`}
                     onClick={() => setTheme('dark')}
@@ -447,6 +438,9 @@ const Settings = () => {
                       <SelectItem value="'Roboto', sans-serif">Roboto</SelectItem>
                       <SelectItem value="'Open Sans', sans-serif">Open Sans</SelectItem>
                       <SelectItem value="'Playfair Display', serif">Playfair Display</SelectItem>
+                      <SelectItem value="'Poppins', sans-serif">Poppins</SelectItem>
+                      <SelectItem value="'Montserrat', sans-serif">Montserrat</SelectItem>
+                      <SelectItem value="'Lato', sans-serif">Lato</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

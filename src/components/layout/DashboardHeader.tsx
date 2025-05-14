@@ -2,6 +2,8 @@
 import React from 'react';
 import { useTheme } from "@/context/ThemeContext";
 import { NotificationsPopover } from './NotificationsPopover';
+import { useNavigate } from 'react-router-dom';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type MarketSession = {
   name: string;
@@ -10,6 +12,7 @@ type MarketSession = {
 };
 
 export const DashboardHeader: React.FC = () => {
+  const navigate = useNavigate();
   const { theme } = useTheme();
   const [currentTime, setCurrentTime] = React.useState<Date>(new Date());
   
@@ -107,8 +110,15 @@ export const DashboardHeader: React.FC = () => {
         ))}
       </div>
       
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-4">
         <NotificationsPopover />
+        <Avatar 
+          className="h-9 w-9 cursor-pointer transition-transform hover:scale-110 border-2 border-primary/30"
+          onClick={() => navigate('/profile')}
+        >
+          <AvatarImage src="https://assets-global.website-files.com/5c4004b5b11b6939a133b415/62ebc617eafeec75b502e68c_Animation%201.gif" />
+          <AvatarFallback>CN</AvatarFallback>
+        </Avatar>
       </div>
     </div>
   );
