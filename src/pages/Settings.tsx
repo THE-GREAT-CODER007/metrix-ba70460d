@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,7 +21,7 @@ import {
   Shield,
   Zap,
   Palette,
-  Font
+  Type
 } from "lucide-react";
 
 const Settings = () => {
@@ -417,7 +416,7 @@ const Settings = () => {
               
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Font className="h-5 w-5" />
+                  <Type className="h-5 w-5" />
                   Font Settings
                 </h3>
                 
