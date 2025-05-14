@@ -1,4 +1,6 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -127,6 +129,21 @@
   body {
     @apply bg-[var(--background)] text-[var(--foreground)];
     font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  /* Font animations */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .avatar-transition {
+    transition: all 0.3s ease;
+  }
+  
+  .avatar-transition:hover {
+    transform: scale(1.05);
   }
 }
 
@@ -164,4 +181,45 @@
 
 .animate-pulse-slow {
   animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Clock animation */
+@keyframes clockPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.clock-pulse {
+  animation: clockPulse 2s infinite ease-in-out;
+}
+
+/* Profile pictures hover effects */
+.avatar-ring {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.avatar-ring::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.avatar-ring:hover::after {
+  opacity: 1;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.05); opacity: 0.6; }
+  100% { transform: scale(1); opacity: 0.3; }
 }
