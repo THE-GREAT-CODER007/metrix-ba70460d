@@ -2,166 +2,9 @@
 import { useState } from 'react';
 import { AccountType, IntegrationType } from '@/types/account';
 import { useToast } from "@/hooks/use-toast";
-
-// Initial data should be imported from a data service in a real app
-// This is just for demonstration purposes
-const initialAccounts: AccountType[] = [
-  {
-    id: '1',
-    name: 'Interactive Brokers',
-    type: 'Margin',
-    balance: 25432.87,
-    currency: 'USD',
-    status: 'active',
-    classification: 'real',
-    logo: '/placeholder.svg',
-  },
-  {
-    id: '2',
-    name: 'TD Ameritrade',
-    type: 'Cash',
-    balance: 12543.32,
-    currency: 'USD',
-    status: 'active',
-    classification: 'real',
-    logo: '/placeholder.svg',
-  },
-  {
-    id: '3',
-    name: 'Robinhood',
-    type: 'Margin',
-    balance: 7865.45,
-    currency: 'USD',
-    status: 'inactive',
-    classification: 'demo',
-    logo: '/placeholder.svg',
-  },
-  {
-    id: '4',
-    name: 'Binance Futures',
-    type: 'Crypto',
-    balance: 3210.78,
-    currency: 'USDT',
-    status: 'active',
-    classification: 'real',
-    logo: '/placeholder.svg',
-  },
-  {
-    id: '5',
-    name: 'FTMO Challenge',
-    type: 'Prop Firm',
-    balance: 100000.00,
-    currency: 'USD',
-    status: 'active',
-    classification: 'challenge',
-    logo: '/placeholder.svg',
-  },
-  {
-    id: '6',
-    name: 'Funded Account',
-    type: 'Prop Firm',
-    balance: 50000.00,
-    currency: 'USD',
-    status: 'active',
-    classification: 'funded',
-    logo: '/placeholder.svg',
-  },
-];
-
-// Initial integrations data
-const initialIntegrations: IntegrationType[] = [
-  { 
-    id: 'mt4',
-    name: 'MetaTrader 4', 
-    description: 'Connect to MT4 accounts',
-    status: 'available',
-    logo: '/placeholder.svg',
-  },
-  { 
-    id: 'mt5',
-    name: 'MetaTrader 5', 
-    description: 'Connect to MT5 accounts',
-    status: 'available',
-    logo: '/placeholder.svg',
-  },
-  { 
-    id: 'tradingview',
-    name: 'TradingView', 
-    description: 'Connect to TradingView',
-    status: 'available',
-    logo: '/placeholder.svg',
-  },
-  { 
-    id: 'dxtrade',
-    name: 'DxTrade', 
-    description: 'Connect to DxTrade platform',
-    status: 'available',
-    logo: '/placeholder.svg',
-  },
-  { 
-    id: 'matchtrader',
-    name: 'Match-Trader', 
-    description: 'Connect to Match-Trader platform',
-    status: 'available',
-    logo: '/placeholder.svg',
-  },
-  { 
-    id: 'tradelocker',
-    name: 'TradeLocker', 
-    description: 'Connect to TradeLocker',
-    status: 'available',
-    logo: '/placeholder.svg',
-  },
-  { 
-    id: 'ib',
-    name: 'Interactive Brokers', 
-    description: 'Connect to Interactive Brokers platform',
-    status: 'available',
-    logo: '/placeholder.svg',
-  },
-  { 
-    id: 'ninjatrader',
-    name: 'NinjaTrader', 
-    description: 'Connect to NinjaTrader platform',
-    status: 'available',
-    logo: '/placeholder.svg',
-  },
-  { 
-    id: 'ctrader',
-    name: 'cTrader', 
-    description: 'Connect to cTrader platform',
-    status: 'available',
-    logo: '/placeholder.svg',
-  },
-  { 
-    id: 'tradovate',
-    name: 'Tradovate', 
-    description: 'Connect to Tradovate platform',
-    status: 'available',
-    logo: '/placeholder.svg',
-  },
-  { 
-    id: 'rethmic',
-    name: 'Rethmic', 
-    description: 'Connect to Rethmic platform',
-    status: 'available',
-    logo: '/placeholder.svg',
-  },
-  { 
-    id: 'binance',
-    name: 'Binance', 
-    description: 'Connect to Binance exchange',
-    status: 'available',
-    logo: '/placeholder.svg',
-  },
-  { 
-    id: 'fxblue',
-    name: 'FX Blue', 
-    description: 'FX Blue aggregator to connect to many brokers',
-    status: 'available',
-    logo: '/placeholder.svg',
-  },
-];
+import { useAccountData } from './useAccountData';
+import { useIntegrations } from './useIntegrations';
+import { useSyncService } from './useSyncService';
 
 const defaultFormData = {
   name: '',
@@ -178,15 +21,16 @@ const defaultFormData = {
 
 export const useAccounts = () => {
   const { toast } = useToast();
-  const [accountsList, setAccountsList] = useState<AccountType[]>(initialAccounts);
-  const [integrations] = useState<IntegrationType[]>(initialIntegrations);
+  const { accountsList, setAccountsList } = useAccountData();
+  const { integrations } = useIntegrations();
+  const { syncProgress, startSyncProgress } = useSyncService();
+  
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<null | AccountType>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [formData, setFormData] = useState(defaultFormData);
   const [isOAuthDialogOpen, setIsOAuthDialogOpen] = useState(false);
   const [selectedIntegration, setSelectedIntegration] = useState<string | null>(null);
-  const [syncProgress, setSyncProgress] = useState<Record<string, number>>({});
 
   const filteredAccounts = activeFilter 
     ? accountsList.filter(account => account.classification === activeFilter)
@@ -283,7 +127,7 @@ export const useAccounts = () => {
     const integration = integrations.find(i => i.id === integrationId);
     
     // For oauth-based brokers, open the auth flow
-    if (['ib', 'tradovate', 'ninjatrader', 'ctrader', 'rethmic', 'binance'].includes(integrationId)) {
+    if (['ib', 'tradovate', 'ninjatrader', 'ctrader', 'rethmic', 'binance', 'fxblue'].includes(integrationId)) {
       setSelectedIntegration(integrationId);
       setIsOAuthDialogOpen(true);
       return;
@@ -394,36 +238,7 @@ export const useAccounts = () => {
         title: "Account Synced",
         description: "Account data successfully updated",
       });
-      
-      // Clear progress
-      setSyncProgress(prev => ({
-        ...prev,
-        [id]: 100
-      }));
     }, 3000);
-  };
-
-  const startSyncProgress = (id: string) => {
-    // Reset progress
-    setSyncProgress(prev => ({
-      ...prev,
-      [id]: 0
-    }));
-    
-    // Simulate progress updates
-    const interval = setInterval(() => {
-      setSyncProgress(prev => {
-        const currentProgress = prev[id] || 0;
-        if (currentProgress >= 100) {
-          clearInterval(interval);
-          return prev;
-        }
-        return {
-          ...prev,
-          [id]: Math.min(currentProgress + 10, 100)
-        };
-      });
-    }, 300);
   };
 
   const handleAutoSyncToggle = (id: string) => {
