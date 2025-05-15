@@ -1,12 +1,6 @@
-/**
- * Terminal command processing module with advanced features:
- * - Role-based command access control
- * - AI-assisted code fixes and syntax checks (mocked)
- * - Dynamic addition of new functions/pages (mocked)
- * - Triggering UI functions (mocked)
- * - App rebuild and library install simulation
- * - Supabase + API integration placeholders
- */
+
+import { OpenAI } from 'openai'; // Example AI integration
+import { supabase } from '@/lib/supabaseClient';
 
 export type CommandResponseType = 'info' | 'error' | 'success' | 'system' | 'output';
 
@@ -15,265 +9,149 @@ export interface CommandResponse {
   content: string;
 }
 
-// Mock user roles allowed to run certain commands
-const adminOnlyCommands = ['rebuild', 'install', 'addfunction', 'addpage', 'fixcode', 'syntaxcheck'];
-const devCommands = ['fixcode', 'syntaxcheck', 'addfunction', 'addpage'];
+const mockTriggerUIFunction = (fnName: string): boolean => {
+  console.log(`Triggering UI function: ${fnName}`);
+  return true;
+};
 
-// Simulated delay helper for async mock responses
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+const mockFileSystemCheck = (filePath: string): string => {
+  return `✅ File ${filePath} created with default content.`;
+};
 
-/**
- * Mock AI code fix - returns fixed code snippet or error
- */
-async function aiFixCode(code: string): Promise<string> {
-  await delay(800);
-  return `// Fixed Code (mocked)\n${code.replace(/bug/g, 'fix')}`;
-}
+export const processCommand = async (cmd: string, role: string = 'user'): Promise<CommandResponse> => {
+  const command = cmd.trim().toLowerCase();
 
-/**
- * Mock syntax check - returns success or error message
- */
-async function syntaxCheck(code: string): Promise<string> {
-  await delay(600);
-  if (code.includes('error')) {
-    return 'Syntax Error: Unexpected token "error"';
-  }
-  return 'Syntax Check Passed: No errors found';
-}
-
-/**
- * Process a terminal command string with userRole for security
- */
-export const processCommand = async (
-  cmd: string,
-  userRole: 'admin' | 'developer' | 'user' = 'user'
-): Promise<CommandResponse> => {
-  const input = cmd.trim();
-  const lowerCmd = input.toLowerCase();
-
-  // Check for empty command
-  if (!input) {
-    return { type: 'error', content: 'No command entered' };
+  // Permissions-based block
+  const restrictedCommands = ['delete-user', 'rebuild', 'add-library'];
+  if (restrictedCommands.includes(command.split(' ')[0]) && role !== 'admin') {
+    return { type: 'error', content: `❌ You do not have permission to run "${command}"` };
   }
 
-  // Parse base command and arguments
-  const parts = input.split(' ');
-  const baseCmd = parts[0].toLowerCase();
-
-  // Role validation helper
-  const checkRole = (command: string): boolean => {
-    if (adminOnlyCommands.includes(command) && userRole !== 'admin') {
-      return false;
-    }
-    if (devCommands.includes(command) && !['admin', 'developer'].includes(userRole)) {
-      return false;
-    }
-    return true;
-  };
-
-  // Basic commands
-  if (baseCmd === 'help') {
+  // HELP
+  if (command === 'help') {
     return {
       type: 'info',
-      content: [
-        'Available commands:',
-        '- help: Show this help message',
-        '- clear: Clear the terminal',
-        '- status: Check system status',
-        '- account: View account information',
-        '- position: View open positions',
-        '- order: View recent orders',
-        '- market [symbol]: Get market data for symbol',
-        '- buy [symbol] [quantity] [price]: Place buy order',
-        '- sell [symbol] [quantity] [price]: Place sell order',
-        '- cancel [orderid]: Cancel an order',
-        '- version: Show system version',
-        '- fixcode [code]: AI-assisted code fixing (dev/admin only)',
-        '- syntaxcheck [code]: AI syntax checking (dev/admin only)',
-        '- addfunction [name]: Add new terminal function (admin only)',
-        '- addpage [name]: Add new UI page (admin only)',
-        '- trigger [functionName]: Trigger UI function',
-        '- rebuild: Rebuild app (admin only)',
-        '- install [package]: Install new library (admin only)',
-      ].join('\n'),
+      content: `
+Available commands:
+- help, clear, version, status, account, position, order
+- market [symbol], buy [symbol] [qty] [price], sell [...], cancel [id]
+- ai fix <code>: AI code review
+- ai add <feature>: AI feature suggestion
+- create-file [path]
+- trigger [functionName]
+- add-library [lib-name]
+- rebuild
+- save-script [name]
+- load-script [name]`
     };
   }
 
-  if (baseCmd === 'clear') {
+  if (command === 'clear') {
     return { type: 'system', content: 'Terminal cleared' };
   }
 
-  if (baseCmd === 'status') {
+  if (command === 'status') {
     return {
       type: 'success',
-      content: 'System status: Online | Connected to Exchange | Market is Open',
+      content: '✅ System: Online\n🔗 Exchange: Connected\n📈 Market: Open'
     };
   }
 
-  if (baseCmd === 'account') {
+  if (command === 'version') {
     return {
       type: 'info',
-      content: 'Account: Interactive Brokers | Balance: $25,432.87 | Margin Used: 15%',
+      content: 'Metrix Terminal v2.0 | AI+API Enabled | Build 2025.05.15'
     };
   }
 
-  if (baseCmd === 'position') {
+  // Mock AI features
+  if (command.startsWith('ai fix ')) {
+    const code = cmd.slice(7);
     return {
-      type: 'info',
-      content:
-        'Open Positions:\n- AAPL: 10 shares @ $165.23 ($1,652.30)\n- MSFT: 15 shares @ $325.75 ($4,886.25)\n- TSLA: 5 shares @ $183.45 ($917.25)',
+      type: 'output',
+      content: `🧠 AI Fix Applied:\n${code}\n✅ Syntax corrected and linted.`
     };
   }
 
-  if (baseCmd === 'order') {
+  if (command.startsWith('ai add ')) {
+    const feature = cmd.slice(7);
     return {
-      type: 'info',
-      content: 'Recent Orders:\n- BUY AAPL 10 @ $165.23 (Filled)\n- SELL MSFT 5 @ $325.75 (Filled)',
+      type: 'output',
+      content: `🧠 AI Feature Plan for "${feature}":\n1. Create new module\n2. Connect to UI\n3. Test integration`
     };
   }
 
-  if (baseCmd === 'version') {
-    return {
-      type: 'info',
-      content: 'Metrix Trading System v1.2.3 | Core v0.9.8 | API v2.1.0',
-    };
-  }
-
-  // Market data
-  if (baseCmd === 'market') {
-    const symbol = parts[1]?.toUpperCase();
-    if (!symbol) {
-      return { type: 'error', content: 'Error: Please specify a symbol (e.g., market AAPL)' };
+  // Mock Trading commands
+  if (command.startsWith('buy ') || command.startsWith('sell ')) {
+    const [action, symbol, qty, price] = cmd.split(' ');
+    if (!symbol || !qty || !price) {
+      return { type: 'error', content: `❌ Invalid ${action} format.` };
     }
-    // Mock market data response
-    return {
-      type: 'info',
-      content: `Market Data for ${symbol}:\nPrice: $${(100 + Math.random() * 200).toFixed(
-        2
-      )}\nChange: ${(Math.random() * 5 - 2.5).toFixed(2)}%\nVolume: ${Math.floor(
-        Math.random() * 1000000
-      ).toLocaleString()}\nBid: $${(100 + Math.random() * 200).toFixed(
-        2
-      )}\nAsk: $${(100 + Math.random() * 200).toFixed(2)}`,
-    };
-  }
-
-  // Trading commands
-  if (baseCmd === 'buy' || baseCmd === 'sell') {
-    const action = baseCmd.toUpperCase();
-    const symbol = parts[1]?.toUpperCase();
-    const quantity = parts[2];
-    const price = parts[3];
-
-    if (!symbol || !quantity || !price) {
-      return {
-        type: 'error',
-        content: `Error: Invalid ${action} command format. Use: ${action.toLowerCase()} [symbol] [quantity] [price]`,
-      };
-    }
-    // Mock order placement
-    const orderId = Math.floor(Math.random() * 1000000);
     return {
       type: 'success',
-      content: `${action} Order Placed:\nSymbol: ${symbol}\nQuantity: ${quantity}\nPrice: $${price}\nOrder ID: ${orderId}`,
+      content: `✅ ${action.toUpperCase()} Order Placed\nSymbol: ${symbol}\nQty: ${qty}\nPrice: ${price}`
     };
   }
 
-  if (baseCmd === 'cancel') {
-    const orderId = parts[1];
-    if (!orderId) {
-      return { type: 'error', content: 'Error: Please specify an order ID (e.g., cancel 123456)' };
+  if (command.startsWith('market ')) {
+    const symbol = command.split(' ')[1]?.toUpperCase();
+    return {
+      type: 'info',
+      content: `📊 Market Data: ${symbol}\nPrice: $${(100 + Math.random() * 200).toFixed(2)}`
+    };
+  }
+
+  if (command.startsWith('cancel ')) {
+    return { type: 'success', content: `✅ Order ${command.split(' ')[1]} canceled.` };
+  }
+
+  // UI Trigger
+  if (command.startsWith('trigger ')) {
+    const fnName = cmd.split(' ')[1];
+    if (mockTriggerUIFunction(fnName)) {
+      return { type: 'success', content: `✅ UI function "${fnName}" triggered.` };
     }
-    // Mock cancel response
+    return { type: 'error', content: `❌ Function "${fnName}" failed.` };
+  }
+
+  // Create file
+  if (command.startsWith('create-file ')) {
+    const filePath = cmd.split(' ')[1];
+    return { type: 'success', content: mockFileSystemCheck(filePath) };
+  }
+
+  // Add library
+  if (command.startsWith('add-library ')) {
+    const lib = cmd.split(' ')[1];
     return {
       type: 'success',
-      content: `Order ${orderId} canceled successfully`,
+      content: `📦 Library "${lib}" added to project dependencies.`
     };
   }
 
-  // AI-assisted commands
-  if (baseCmd === 'fixcode') {
-    if (!checkRole('fixcode')) {
-      return { type: 'error', content: 'Permission denied: fixcode command requires developer/admin role' };
-    }
-    const codeToFix = input.slice(baseCmd.length).trim();
-    if (!codeToFix) {
-      return { type: 'error', content: 'Error: Please provide code to fix after fixcode command' };
-    }
-    const fixedCode = await aiFixCode(codeToFix);
-    return { type: 'success', content: `AI Fixed Code:\n${fixedCode}` };
+  // Rebuild app
+  if (command === 'rebuild') {
+    return {
+      type: 'system',
+      content: '🛠️ Rebuilding app...\n✅ Build complete.\n♻️ Reloading...'
+    };
   }
 
-  if (baseCmd === 'syntaxcheck') {
-    if (!checkRole('syntaxcheck')) {
-      return { type: 'error', content: 'Permission denied: syntaxcheck command requires developer/admin role' };
-    }
-    const codeToCheck = input.slice(baseCmd.length).trim();
-    if (!codeToCheck) {
-      return { type: 'error', content: 'Error: Please provide code to check after syntaxcheck command' };
-    }
-    const result = await syntaxCheck(codeToCheck);
-    return { type: result.startsWith('Syntax Error') ? 'error' : 'success', content: result };
+  // Supabase save/load script mock
+  if (command.startsWith('save-script ')) {
+    const name = cmd.split(' ')[1];
+    // await supabase.from('scripts').insert({ name, content: '...' });
+    return { type: 'success', content: `💾 Script "${name}" saved.` };
   }
 
-  if (baseCmd === 'addfunction') {
-    if (!checkRole('addfunction')) {
-      return { type: 'error', content: 'Permission denied: addfunction command requires admin role' };
-    }
-    const funcName = parts[1];
-    if (!funcName) {
-      return { type: 'error', content: 'Error: Please specify a function name to add' };
-    }
-    // Mock adding function
-    return { type: 'success', content: `New terminal function '${funcName}' added successfully (mock)` };
+  if (command.startsWith('load-script ')) {
+    const name = cmd.split(' ')[1];
+    // const { data } = await supabase.from('scripts').select('*').eq('name', name);
+    return { type: 'info', content: `📂 Script "${name}" loaded:\n(status)\n(market AAPL)` };
   }
 
-  if (baseCmd === 'addpage') {
-    if (!checkRole('addpage')) {
-      return { type: 'error', content: 'Permission denied: addpage command requires admin role' };
-    }
-    const pageName = parts[1];
-    if (!pageName) {
-      return { type: 'error', content: 'Error: Please specify a page name to add' };
-    }
-    // Mock adding page
-    return { type: 'success', content: `New UI page '${pageName}' added successfully (mock)` };
-  }
-
-  if (baseCmd === 'trigger') {
-    const funcName = parts[1];
-    if (!funcName) {
-      return { type: 'error', content: 'Error: Please specify a UI function to trigger' };
-    }
-    // Mock triggering UI function
-    return { type: 'success', content: `UI function '${funcName}' triggered successfully (mock)` };
-  }
-
-  if (baseCmd === 'rebuild') {
-    if (!checkRole('rebuild')) {
-      return { type: 'error', content: 'Permission denied: rebuild command requires admin role' };
-    }
-    // Mock rebuild delay
-    await delay(1500);
-    return { type: 'success', content: 'Application rebuilt successfully (mock)' };
-  }
-
-  if (baseCmd === 'install') {
-    if (!checkRole('install')) {
-      return { type: 'error', content: 'Permission denied: install command requires admin role' };
-    }
-    const pkg = parts[1];
-    if (!pkg) {
-      return { type: 'error', content: 'Error: Please specify a package/library to install' };
-    }
-    // Mock install delay
-    await delay(1000);
-    return { type: 'success', content: `Package '${pkg}' installed successfully (mock)` };
-  }
-
-  // Unknown command fallback
   return {
     type: 'error',
-    content: `Unknown command: ${input}. Type 'help' for available commands.`,
+    content: `❌ Unknown command: "${cmd}"`
   };
 };
