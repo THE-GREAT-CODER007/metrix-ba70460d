@@ -24,14 +24,14 @@ export const useNews = () => {
 
   // Filter news based on search and filters
   const filteredNews = (data || []).filter(item => {
-    return (
-      (searchQuery === "" || 
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        item.summary.toLowerCase().includes(searchQuery.toLowerCase())) &&
-      (selectedSource === "all" || item.source === selectedSource) &&
-      (selectedCategory === "all" || item.category === selectedCategory) &&
-      (selectedImpact === "all" || item.impact === selectedImpact)
-    );
+    const titleMatch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const summaryMatch = item.summary.toLowerCase().includes(searchQuery.toLowerCase());
+    const sourceMatch = selectedSource === "all" || item.source === selectedSource;
+    const categoryMatch = selectedCategory === "all" || item.category === selectedCategory;
+    const impactMatch = selectedImpact === "all" || item.impact === selectedImpact;
+    
+    return (searchQuery === "" || titleMatch || summaryMatch) && 
+           sourceMatch && categoryMatch && impactMatch;
   });
 
   return {

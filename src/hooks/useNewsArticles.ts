@@ -1,21 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-
-export interface NewsArticle {
-  id: string;
-  title: string;
-  source: string;
-  author: string | null;
-  published_at: string;
-  content: string | null;
-  summary: string | null;
-  url: string;
-  image_url: string | null;
-  categories: string[] | null;
-  tickers: string[] | null;
-  sentiment: string | null;
-}
+import { NewsArticle } from '@/types/news';
 
 export const useNewsArticles = (limit = 10, categories?: string[]) => {
   return useQuery({
@@ -38,7 +24,20 @@ export const useNewsArticles = (limit = 10, categories?: string[]) => {
         throw new Error(error.message);
       }
       
-      return data || [];
-    }
+      // Map Supabase data to the NewsArticle type used in our components
+      return data?.map(article => ({
+        id: article.id,
+        title: article.title,
+        source: article.source,
+        time: new Date(article.published_at).toLocaleDateString(),
+        summary: article.summary || article.content?.substring(0, 150) + '...',
+        category: article.categories?.[0] || 'News',
+        impact: article.sentiment === 'positive' ? 'low' : 
+               article.sentiment === 'negative' ? 'high' : 'medium',
+        url: article.url,
+        imageUrl: article.image_url
+      })) || [];
+    },
+    staleTime: 60000 // 1 minute
   });
 };

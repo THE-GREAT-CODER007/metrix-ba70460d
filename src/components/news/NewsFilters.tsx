@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,6 +23,9 @@ const sources = [
   { label: "CNBC", value: "CNBC" },
   { label: "Wall Street Journal", value: "Wall Street Journal" },
   { label: "MarketWatch", value: "MarketWatch" },
+  { label: "BBC", value: "BBC" },
+  { label: "Nikkei", value: "Nikkei" },
+  { label: "Investing.com", value: "Investing.com" },
 ];
 
 // Categories for filtering
