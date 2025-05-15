@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { ArrowRight, Clock } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 // News data type
 export type NewsItem = {
@@ -38,8 +38,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
   const handleReadMore = (e: React.MouseEvent<HTMLButtonElement>, url: string) => {
     e.preventDefault();
     window.open(url, '_blank');
-    toast({
-      title: "Opening news source",
+    toast("Opening news source", {
       description: `Redirecting to ${item.source}...`,
       duration: 3000,
     });
