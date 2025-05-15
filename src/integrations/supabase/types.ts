@@ -9,6 +9,347 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      dashboard_widgets: {
+        Row: {
+          created_at: string
+          height: number
+          id: string
+          position_x: number
+          position_y: number
+          settings: Json | null
+          updated_at: string
+          user_id: string
+          widget_type: string
+          width: number
+        }
+        Insert: {
+          created_at?: string
+          height: number
+          id?: string
+          position_x: number
+          position_y: number
+          settings?: Json | null
+          updated_at?: string
+          user_id: string
+          widget_type: string
+          width: number
+        }
+        Update: {
+          created_at?: string
+          height?: number
+          id?: string
+          position_x?: number
+          position_y?: number
+          settings?: Json | null
+          updated_at?: string
+          user_id?: string
+          widget_type?: string
+          width?: number
+        }
+        Relationships: []
+      }
+      economic_events: {
+        Row: {
+          actual: string | null
+          country: string
+          created_at: string
+          currency: string
+          event_name: string
+          event_time: string
+          forecast: string | null
+          id: string
+          impact: string
+          previous: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual?: string | null
+          country: string
+          created_at?: string
+          currency: string
+          event_name: string
+          event_time: string
+          forecast?: string | null
+          id?: string
+          impact: string
+          previous?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual?: string | null
+          country?: string
+          created_at?: string
+          currency?: string
+          event_name?: string
+          event_time?: string
+          forecast?: string | null
+          id?: string
+          impact?: string
+          previous?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      journal_entries: {
+        Row: {
+          account_id: string | null
+          created_at: string
+          direction: string
+          entry_date: string
+          entry_price: number
+          exit_price: number | null
+          id: string
+          instrument: string
+          notes: string | null
+          profit_loss: number | null
+          screenshots: string[] | null
+          size: number
+          status: string
+          stop_loss: number | null
+          tags: string[] | null
+          take_profit: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          created_at?: string
+          direction: string
+          entry_date?: string
+          entry_price: number
+          exit_price?: number | null
+          id?: string
+          instrument: string
+          notes?: string | null
+          profit_loss?: number | null
+          screenshots?: string[] | null
+          size: number
+          status?: string
+          stop_loss?: number | null
+          tags?: string[] | null
+          take_profit?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          created_at?: string
+          direction?: string
+          entry_date?: string
+          entry_price?: number
+          exit_price?: number | null
+          id?: string
+          instrument?: string
+          notes?: string | null
+          profit_loss?: number | null
+          screenshots?: string[] | null
+          size?: number
+          status?: string
+          stop_loss?: number | null
+          tags?: string[] | null
+          take_profit?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_entries_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "trading_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_data_cache: {
+        Row: {
+          data: Json
+          data_type: string
+          expiry: string
+          id: string
+          instrument: string
+          last_updated: string
+          timeframe: string
+        }
+        Insert: {
+          data: Json
+          data_type: string
+          expiry: string
+          id?: string
+          instrument: string
+          last_updated?: string
+          timeframe: string
+        }
+        Update: {
+          data?: Json
+          data_type?: string
+          expiry?: string
+          id?: string
+          instrument?: string
+          last_updated?: string
+          timeframe?: string
+        }
+        Relationships: []
+      }
+      markets: {
+        Row: {
+          close_time: string | null
+          created_at: string
+          id: string
+          is_24h: boolean | null
+          name: string
+          open_time: string | null
+          timezone: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          close_time?: string | null
+          created_at?: string
+          id?: string
+          is_24h?: boolean | null
+          name: string
+          open_time?: string | null
+          timezone: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          close_time?: string | null
+          created_at?: string
+          id?: string
+          is_24h?: boolean | null
+          name?: string
+          open_time?: string | null
+          timezone?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      news_articles: {
+        Row: {
+          author: string | null
+          categories: string[] | null
+          content: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          published_at: string
+          sentiment: string | null
+          source: string
+          summary: string | null
+          tickers: string[] | null
+          title: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          author?: string | null
+          categories?: string[] | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          published_at: string
+          sentiment?: string | null
+          source: string
+          summary?: string | null
+          tickers?: string[] | null
+          title: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          author?: string | null
+          categories?: string[] | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          published_at?: string
+          sentiment?: string | null
+          source?: string
+          summary?: string | null
+          tickers?: string[] | null
+          title?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          link: string | null
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          link?: string | null
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          link?: string | null
+          message?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      price_alerts: {
+        Row: {
+          condition: string
+          created_at: string
+          expiry_date: string | null
+          id: string
+          instrument: string
+          is_active: boolean | null
+          notification_sent: boolean | null
+          price: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          condition: string
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          instrument: string
+          is_active?: boolean | null
+          notification_sent?: boolean | null
+          price: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          condition?: string
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          instrument?: string
+          is_active?: boolean | null
+          notification_sent?: boolean | null
+          price?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -36,12 +377,165 @@ export type Database = {
         }
         Relationships: []
       }
+      strategies: {
+        Row: {
+          created_at: string
+          description: string | null
+          entry_rules: Json | null
+          exit_rules: Json | null
+          id: string
+          is_active: boolean | null
+          market_type: string | null
+          name: string
+          performance_metrics: Json | null
+          risk_management: Json | null
+          timeframe: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          entry_rules?: Json | null
+          exit_rules?: Json | null
+          id?: string
+          is_active?: boolean | null
+          market_type?: string | null
+          name: string
+          performance_metrics?: Json | null
+          risk_management?: Json | null
+          timeframe?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          entry_rules?: Json | null
+          exit_rules?: Json | null
+          id?: string
+          is_active?: boolean | null
+          market_type?: string | null
+          name?: string
+          performance_metrics?: Json | null
+          risk_management?: Json | null
+          timeframe?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      trading_accounts: {
+        Row: {
+          account_number: string | null
+          account_type: string
+          api_key: string | null
+          api_secret: string | null
+          auto_sync: boolean | null
+          balance: number
+          broker: string
+          classification: string
+          created_at: string
+          currency: string
+          id: string
+          last_sync: string | null
+          leverage: string | null
+          name: string
+          status: string
+          sync_interval: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_number?: string | null
+          account_type: string
+          api_key?: string | null
+          api_secret?: string | null
+          auto_sync?: boolean | null
+          balance?: number
+          broker: string
+          classification?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          last_sync?: string | null
+          leverage?: string | null
+          name: string
+          status?: string
+          sync_interval?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_number?: string | null
+          account_type?: string
+          api_key?: string | null
+          api_secret?: string | null
+          auto_sync?: boolean | null
+          balance?: number
+          broker?: string
+          classification?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          last_sync?: string | null
+          leverage?: string | null
+          name?: string
+          status?: string
+          sync_interval?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          chart_preferences: Json | null
+          created_at: string
+          date_format: string | null
+          language: string | null
+          notification_preferences: Json | null
+          theme: string | null
+          time_format: string | null
+          timezone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chart_preferences?: Json | null
+          created_at?: string
+          date_format?: string | null
+          language?: string | null
+          notification_preferences?: Json | null
+          theme?: string | null
+          time_format?: string | null
+          timezone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chart_preferences?: Json | null
+          created_at?: string
+          date_format?: string | null
+          language?: string | null
+          notification_preferences?: Json | null
+          theme?: string | null
+          time_format?: string | null
+          timezone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      sync_trading_account: {
+        Args: { account_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
