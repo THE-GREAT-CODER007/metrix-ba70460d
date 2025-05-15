@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { processCommand, CommandResponse } from '@/utils/terminalCommands';
 
