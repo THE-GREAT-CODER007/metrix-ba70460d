@@ -1,52 +1,43 @@
 
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { EconomicEvent, FilterCountry } from '@/types/news';
+import { economicData } from '@/components/news/NewsData';
 
-export interface EconomicEvent {
-  id: string;
-  event_time: string;
-  country: string;
-  currency: string;
-  event_name: string;
-  impact: string;
-  actual: string | null;
-  forecast: string | null;
-  previous: string | null;
-}
+export const useEconomicCalendar = () => {
+  const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date());
+  const [selectedCountry, setSelectedCountry] = useState<FilterCountry>("all");
 
-export const useEconomicCalendar = (startDate?: Date, endDate?: Date, impact?: string[], countries?: string[]) => {
-  return useQuery({
-    queryKey: ['economic-events', { startDate, endDate, impact, countries }],
+  // Simulated data fetching with react-query
+  const { data, isLoading } = useQuery({
+    queryKey: ['economic-calendar'],
     queryFn: async (): Promise<EconomicEvent[]> => {
-      let query = supabase
-        .from('economic_events')
-        .select('*')
-        .order('event_time', { ascending: true });
-      
-      if (startDate) {
-        query = query.gte('event_time', startDate.toISOString());
-      }
-      
-      if (endDate) {
-        query = query.lte('event_time', endDate.toISOString());
-      }
-      
-      if (impact && impact.length > 0) {
-        query = query.in('impact', impact);
-      }
-      
-      if (countries && countries.length > 0) {
-        query = query.in('country', countries);
-      }
-      
-      const { data, error } = await query;
-      
-      if (error) {
-        console.error('Error fetching economic events:', error);
-        throw new Error(error.message);
-      }
-      
-      return data || [];
-    }
+      // In a real app, this would be a fetch call to an API
+      // Simulating API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return economicData;
+    },
+    staleTime: 60000, // 1 minute
   });
+
+  // Filter economic calendar based on selected date and country
+  const filteredEvents = (data || []).filter(item => {
+    const itemDate = new Date(item.date).toDateString();
+    const selectedDateStr = calendarDate ? calendarDate.toDateString() : "";
+    
+    return (
+      (calendarDate === undefined || itemDate === selectedDateStr) &&
+      (selectedCountry === "all" || item.country === selectedCountry)
+    );
+  });
+
+  return {
+    events: data || [],
+    filteredEvents,
+    isLoading,
+    calendarDate,
+    setCalendarDate,
+    selectedCountry,
+    setSelectedCountry
+  };
 };

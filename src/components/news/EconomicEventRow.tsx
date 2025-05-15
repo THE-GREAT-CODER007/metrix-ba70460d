@@ -1,18 +1,8 @@
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Badge } from "@/components/ui/badge";
-
-// Economic event type
-export type EconomicEvent = {
-  id: string;
-  title: string;
-  date: string;
-  country: string;
-  impact: "low" | "medium" | "high";
-  previous: string;
-  forecast: string;
-  actual: string;
-};
+import { EconomicEvent } from '@/types/news';
 
 // Function to get impact color
 export const getImpactColor = (impact: string) => {
@@ -37,11 +27,18 @@ export const compareValues = (actual: string, forecast: string) => {
 
 interface EconomicEventRowProps {
   event: EconomicEvent;
+  index: number;
 }
 
-const EconomicEventRow: React.FC<EconomicEventRowProps> = ({ event }) => {
+const EconomicEventRow: React.FC<EconomicEventRowProps> = ({ event, index }) => {
   return (
-    <tr key={event.id} className="border-b border-gray-800 hover:bg-gray-900/40 transition-colors">
+    <motion.tr 
+      key={event.id} 
+      className="border-b border-gray-800 hover:bg-gray-900/40 transition-colors"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, delay: index * 0.05 }}
+    >
       <td className="p-3">{event.date}</td>
       <td className="p-3">{event.country}</td>
       <td className="p-3 font-medium">{event.title}</td>
@@ -55,7 +52,7 @@ const EconomicEventRow: React.FC<EconomicEventRowProps> = ({ event }) => {
       <td className={`p-3 text-right font-medium ${compareValues(event.actual, event.forecast)}`}>
         {event.actual}
       </td>
-    </tr>
+    </motion.tr>
   );
 };
 
