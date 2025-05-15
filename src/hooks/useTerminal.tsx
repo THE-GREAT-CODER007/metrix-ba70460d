@@ -1,16 +1,15 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { processCommand, CommandResponse } from '@/utils/terminalCommands';
 
 export type TerminalHistoryItem = {
-  type: 'input' | 'info' | 'error' | 'success' | 'system' | 'output' | 'ai' | 'warning';
+  type: 'input' | 'info' | 'error' | 'success' | 'system' | 'output';
   content: string;
 };
 
 interface UseTerminalOptions {
   initialHistory?: TerminalHistoryItem[];
   autoScroll?: boolean;
-  userRole?: string;  // Pass current user role for command permission checks
+  userRole?: 'admin' | 'developer' | 'user';  // Security roles
 }
 
 export const useTerminal = (options?: UseTerminalOptions) => {
@@ -24,6 +23,8 @@ export const useTerminal = (options?: UseTerminalOptions) => {
   const [autoScroll, setAutoScroll] = useState(options?.autoScroll !== false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const userRole = options?.userRole || 'user';
+
   useEffect(() => {
     if (autoScroll && scrollRef.current) {
       const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
@@ -33,21 +34,20 @@ export const useTerminal = (options?: UseTerminalOptions) => {
     }
   }, [history, autoScroll]);
 
-  // Make this async to support AI calls, API calls, and async command processing
   const executeCommand = async (cmd: string) => {
     if (!cmd.trim()) return false;
 
-    setHistory((prev) => [...prev, { type: 'input', content: cmd }]);
+    setHistory(prev => [...prev, { type: 'input', content: cmd }]);
 
-    // Pass userRole or context to processCommand for permission checks
-    const response: CommandResponse = await processCommand(cmd, { userRole: options?.userRole });
+    // Process command - supports async for AI and API calls
+    const response: CommandResponse = await processCommand(cmd, userRole);
 
     if (response.type === 'system' && response.content === 'Terminal cleared') {
       setHistory([{ type: 'info', content: 'Terminal cleared' }]);
       return true;
     }
 
-    setHistory((prev) => [...prev, { type: response.type, content: response.content }]);
+    setHistory(prev => [...prev, { type: response.type, content: response.content }]);
     return true;
   };
 
@@ -55,7 +55,6 @@ export const useTerminal = (options?: UseTerminalOptions) => {
     setHistory([{ type: 'info', content: 'Terminal cleared' }]);
   };
 
-  // Support async/await for script execution as well
   const executeScript = async (script: string): Promise<number> => {
     if (!script.trim()) {
       return 0;
@@ -64,12 +63,13 @@ export const useTerminal = (options?: UseTerminalOptions) => {
     const commands = script
       .trim()
       .split('\n')
-      .filter((line) => line.trim() && !line.trim().startsWith('#'));
+      .filter(line => line.trim() && !line.trim().startsWith('#'));
 
     let count = 0;
     for (const cmd of commands) {
-      const executed = await executeCommand(cmd);
-      if (executed) count++;
+      if (await executeCommand(cmd)) {
+        count++;
+      }
     }
 
     return count;
@@ -86,6 +86,7 @@ export const useTerminal = (options?: UseTerminalOptions) => {
     clearTerminal,
     executeScript,
     scrollRef,
+    userRole,
   };
 };
 
