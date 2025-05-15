@@ -1,9 +1,7 @@
-
-import { NewsItem } from './NewsCard';
-import { EconomicEvent } from './EconomicEventRow';
+import { NewsArticle, EconomicEvent } from '@/types/news';
 
 // Sample news data with actual financial news images
-export const newsData: NewsItem[] = [
+export const newsData: NewsArticle[] = [
   {
     id: "1",
     title: "Fed Signals Potential Rate Cut in September",
