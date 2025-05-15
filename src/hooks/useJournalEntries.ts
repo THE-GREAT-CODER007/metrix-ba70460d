@@ -69,7 +69,11 @@ export const useJournalEntries = (accountId?: string) => {
         throw new Error(error.message);
       }
       
-      return data || [];
+      // Cast the direction field to ensure it's either 'long' or 'short'
+      return (data || []).map(entry => ({
+        ...entry,
+        direction: entry.direction.toLowerCase() === 'short' ? 'short' : 'long'
+      } as JournalEntry));
     }
   });
 
@@ -163,11 +167,37 @@ export const useJournalEntries = (accountId?: string) => {
     }
   });
 
+  const deleteEntry = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('journal_entries')
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['journalEntries'] });
+      toast('Entry Deleted', {
+        description: 'Your journal entry has been deleted successfully',
+      });
+    },
+    onError: (error) => {
+      console.error('Error deleting journal entry:', error);
+      toast('Error', {
+        description: `Could not delete journal entry: ${error.message}`,
+      });
+    }
+  });
+
   return {
     entries: data || [],
     isLoading,
     error,
     createEntry,
-    updateEntry
+    updateEntry,
+    deleteEntry
   };
 };
