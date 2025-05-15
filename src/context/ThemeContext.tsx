@@ -8,21 +8,22 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void;
 }
 
-export const ThemeContext = createContext<ThemeContextType>({
-  theme: 'dark',
-  setTheme: () => {},
-});
+// Create the context with a default value
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+// Custom hook to use the theme context
 export const useTheme = (): ThemeContextType => {
   const context = useContext(ThemeContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;
 };
 
+// ThemeProvider component
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(() => {
+    // Get saved theme from localStorage or use default
     const savedTheme = localStorage.getItem('theme');
     return (savedTheme as Theme) || 'dark';
   });
@@ -41,9 +42,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     root.classList.add(`theme-${theme}`);
   }, [theme]);
 
+  // Provide the theme context value
+  const value = { theme, setTheme };
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
 };
+
+// Export ThemeContext for direct usage if needed
+export { ThemeContext };
