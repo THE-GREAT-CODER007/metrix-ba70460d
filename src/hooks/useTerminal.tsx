@@ -1,48 +1,72 @@
+import { useState, useRef, useEffect } from 'react';
+import { processCommand } from '@/utils/terminalCommands';
+import { useToast } from '@/hooks/use-toast';
 
-import React from 'react';
-import useTerminal from '@/hooks/useTerminal';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
+interface TerminalOptions {
+  userRole: 'admin' | 'developer' | 'user';
+}
 
-const Terminal: React.FC = () => {
-  const {
+interface HistoryItem {
+  type: 'input' | 'info' | 'error' | 'success' | 'system' | 'output';
+  content: string;
+}
+
+const useTerminal = ({ userRole }: TerminalOptions) => {
+  const [command, setCommand] = useState('');
+  const [history, setHistory] = useState<HistoryItem[]>([
+    { type: 'info', content: 'Welcome to Metrix Terminal v2.0.0' },
+    { type: 'info', content: "Type 'help' for available commands" },
+  ]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+
+  const executeCommand = async (cmd: string) => {
+    if (!cmd.trim()) return;
+
+    // Add command to history
+    setHistory(prev => [...prev, { type: 'input', content: cmd }]);
+
+    try {
+      // Process command and get response
+      const response = await processCommand(cmd, userRole);
+
+      // Special handling for system commands
+      if (response.type === 'system' && response.content === 'Terminal cleared') {
+        setHistory([{ type: 'info', content: 'Terminal cleared' }]);
+        return;
+      }
+
+      // Add response to history
+      setHistory(prev => [...prev, response]);
+
+      // Show toast for important operations
+      if (response.type === 'success' || response.type === 'error') {
+        toast({
+          title: response.type === 'success' ? 'Success' : 'Error',
+          description: response.content,
+          variant: response.type === 'success' ? 'default' : 'destructive',
+        });
+      }
+    } catch (error) {
+      setHistory(prev => [...prev, {
+        type: 'error',
+        content: error instanceof Error ? error.message : 'An unknown error occurred'
+      }]);
+    }
+  };
+
+  const clearTerminal = () => {
+    setHistory([{ type: 'info', content: 'Terminal cleared' }]);
+  };
+
+  return {
     command,
     setCommand,
     history,
     executeCommand,
     clearTerminal,
     scrollRef
-  } = useTerminal({ userRole: 'admin' });
-
-  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      await executeCommand(command);
-      setCommand('');
-    }
   };
-
-  return (
-    <div className="terminal-container p-4 bg-black text-green-400 h-full flex flex-col">
-      <ScrollArea className="flex-1 overflow-auto" ref={scrollRef}>
-        <div className="space-y-2">
-          {history.map((item, idx) => (
-            <div key={idx} className={`terminal-line terminal-${item.type}`}>
-              {item.content}
-            </div>
-          ))}
-        </div>
-      </ScrollArea>
-      <div className="pt-2">
-        <Input
-          value={command}
-          onChange={e => setCommand(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="> Enter command"
-          className="bg-black text-green-300 border-green-500"
-        />
-      </div>
-    </div>
-  );
 };
 
-export default Terminal;
+export default useTerminal;
