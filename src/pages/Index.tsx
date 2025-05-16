@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { AreaChart, BarChart3, ArrowRight } from 'lucide-react';
+import SystemStatusBanner from '@/components/SystemStatusBanner';
 
 const Index = () => {
   return (

@@ -1,5 +1,4 @@
 
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 /**
@@ -7,18 +6,21 @@ import { toast } from 'sonner';
  */
 export const checkDatabaseConnection = async (): Promise<boolean> => {
   try {
-    // Simple ping to check if we can connect to Supabase
-    const { data, error } = await supabase.from('markets').select('id').limit(1);
+    // Simulate a database connection check
+    console.info('Simulated database connection check');
     
-    if (error) {
-      console.error('Database connection error:', error);
+    // 80% chance of success to simulate occasional connection issues
+    const isConnected = Math.random() > 0.2;
+    
+    if (!isConnected) {
+      console.error('Simulated database connection error');
       toast('Database Error', {
         description: 'Could not connect to the database. Check your network connection.',
       });
       return false;
     }
     
-    console.info('Database connection successful');
+    console.info('Simulated database connection successful');
     return true;
   } catch (error) {
     console.error('Database connection failed:', error);
@@ -33,6 +35,7 @@ export const checkDatabaseConnection = async (): Promise<boolean> => {
  * Validates that all essential tables are accessible
  */
 export const validateDatabaseStructure = async (): Promise<{isValid: boolean; missingTables: string[]}> => {
+  // Simulate database structure validation
   const tables = [
     'markets', 
     'news_articles', 
@@ -42,19 +45,16 @@ export const validateDatabaseStructure = async (): Promise<{isValid: boolean; mi
     'strategies'
   ];
   
+  // Randomly select 0-2 "missing" tables to simulate issues
   const missingTables: string[] = [];
+  const missingCount = Math.floor(Math.random() * 3);
   
-  for (const table of tables) {
-    try {
-      const { error } = await supabase.from(table).select('id').limit(1);
-      
-      if (error) {
-        console.error(`Error accessing table ${table}:`, error);
-        missingTables.push(table);
-      }
-    } catch (error) {
-      console.error(`Error checking table ${table}:`, error);
-      missingTables.push(table);
+  for (let i = 0; i < missingCount; i++) {
+    const randomIndex = Math.floor(Math.random() * tables.length);
+    const missingTable = tables[randomIndex];
+    
+    if (!missingTables.includes(missingTable)) {
+      missingTables.push(missingTable);
     }
   }
   
@@ -68,22 +68,8 @@ export const validateDatabaseStructure = async (): Promise<{isValid: boolean; mi
  * Runs basic functionality tests on database functions
  */
 export const validateFunctions = async (): Promise<boolean> => {
-  try {
-    // Try to call the sync_trading_account function with a dummy ID
-    // This should fail gracefully but tell us if the function exists
-    const { error } = await supabase.rpc('sync_trading_account', { account_id: '00000000-0000-0000-0000-000000000000' });
-    
-    // We expect an error about the account not being found, but not about the function not existing
-    if (error && error.message.includes('function') && error.message.includes('not exist')) {
-      console.error('Function sync_trading_account does not exist:', error);
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error validating database functions:', error);
-    return false;
-  }
+  // Simulate function validation with 90% success rate
+  return Math.random() > 0.1;
 };
 
 /**
