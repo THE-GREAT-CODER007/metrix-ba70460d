@@ -1,6 +1,6 @@
 
-// We'll temporarily disable the actual database operations since the command_logs table doesn't exist
-// This will serve as a placeholder until we create the table in Supabase
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export interface CommandLog {
   id: string;
@@ -11,27 +11,35 @@ export interface CommandLog {
   response?: string;
 }
 
-// Mock data for command logs
-const mockCommandLogs: CommandLog[] = [];
-
 export const logCommand = async (
   command: string,
   status: 'success' | 'error',
   response?: string
 ): Promise<void> => {
   try {
-    // Instead of writing to the database, we'll log to the console and store in memory
-    const commandLog = {
-      id: Math.random().toString(36).substring(2, 9),
-      user_id: 'current-user',
-      command,
-      timestamp: new Date().toISOString(),
-      status,
-      response
-    };
+    // Get current session - for anonymous users we'll use a placeholder ID
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user_id = sessionData.session?.user.id || 'anonymous-user';
     
-    mockCommandLogs.unshift(commandLog);
-    console.log('Command logged:', commandLog);
+    const { error } = await supabase
+      .from('command_logs')
+      .insert({
+        user_id,
+        command,
+        status,
+        response
+      });
+    
+    if (error) {
+      console.error('Error logging command to database:', error);
+      // Fall back to console logging if database insertion fails
+      console.log('Command logged (fallback):', {
+        command,
+        status,
+        response,
+        timestamp: new Date().toISOString()
+      });
+    }
   } catch (error) {
     console.error('Error logging command:', error);
   }
@@ -39,8 +47,22 @@ export const logCommand = async (
 
 export const getCommandHistory = async (): Promise<CommandLog[]> => {
   try {
-    // Return mock data instead of querying the database
-    return [...mockCommandLogs];
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user_id = sessionData.session?.user.id || 'anonymous-user';
+    
+    const { data, error } = await supabase
+      .from('command_logs')
+      .select('*')
+      .eq('user_id', user_id)
+      .order('timestamp', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching command history:', error);
+      // Return empty array if database query fails
+      return [];
+    }
+    
+    return data as CommandLog[];
   } catch (error) {
     console.error('Error fetching command history:', error);
     return [];

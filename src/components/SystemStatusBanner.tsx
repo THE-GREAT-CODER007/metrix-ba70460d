@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { checkDatabaseConnection } from '@/utils/dbChecker';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 type StatusState = 'checking' | 'connected' | 'disconnected' | 'unknown';
 
@@ -15,13 +16,30 @@ const SystemStatusBanner = () => {
       try {
         const isConnected = await checkDatabaseConnection();
         setStatus(isConnected ? 'connected' : 'disconnected');
+        
+        if (isConnected) {
+          console.log('System is connected and ready');
+        } else {
+          console.error('Database connection issues detected');
+          toast('Connection Issue', {
+            description: 'Database connection issue detected. Check System Check page for details.',
+          });
+        }
       } catch (error) {
         console.error('Error checking connection:', error);
         setStatus('unknown');
+        toast('Connection Error', {
+          description: 'Could not verify system status. Please check network connection.',
+        });
       }
     };
 
     checkConnection();
+    
+    // Set up a periodic check every 60 seconds
+    const interval = setInterval(checkConnection, 60000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const getStatusIcon = () => {

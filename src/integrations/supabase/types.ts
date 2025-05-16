@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      command_logs: {
+        Row: {
+          command: string
+          id: string
+          response: string | null
+          status: string
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          command: string
+          id?: string
+          response?: string | null
+          status: string
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          command?: string
+          id?: string
+          response?: string | null
+          status?: string
+          timestamp?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dashboard_widgets: {
         Row: {
           created_at: string

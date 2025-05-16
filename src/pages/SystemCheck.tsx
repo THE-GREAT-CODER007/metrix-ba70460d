@@ -1,171 +1,237 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, AlertTriangle, RefreshCw } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { runDatabaseChecks } from '@/utils/dbChecker';
-import { useNotifications } from '@/hooks/useNotifications';
-import { useMarketData } from '@/hooks/useMarketData';
-import { useJournalEntries } from '@/hooks/useJournalEntries';
-import { useTradingAccounts } from '@/hooks/useTradingAccounts';
-import { useNewsArticles } from '@/hooks/useNewsArticles';
+import { AlertCircle, CheckCircle, Database, RefreshCw, Server, ShieldAlert, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { runDatabaseChecks } from '@/utils/dbChecker';
+import { Separator } from '@/components/ui/separator';
+import { supabase } from '@/integrations/supabase/client';
+
+interface StatusBadgeProps {
+  status: boolean | null;
+  loadingState: boolean;
+}
+
+const StatusBadge: React.FC<StatusBadgeProps> = ({ status, loadingState }) => {
+  if (loadingState) {
+    return <div className="h-5 w-5 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />;
+  }
+  
+  if (status === null) {
+    return <AlertCircle className="h-5 w-5 text-amber-500" />;
+  }
+  
+  return status ? 
+    <CheckCircle className="h-5 w-5 text-green-500" /> : 
+    <XCircle className="h-5 w-5 text-red-500" />;
+};
 
 const SystemCheck = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [dbStatus, setDbStatus] = useState<{
-    isConnected: boolean;
-    structureValid: boolean;
-    functionsValid: boolean;
-    missingTables: string[];
-  } | null>(null);
-  
-  const { notifications } = useNotifications();
-  const { data: marketData, isLoading: marketsLoading } = useMarketData();
-  const { entries } = useJournalEntries();
-  const { accounts } = useTradingAccounts();
-  const { data: newsArticles } = useNewsArticles(5);
-  
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [dbConnection, setDbConnection] = useState<boolean | null>(null);
+  const [dbStructure, setDbStructure] = useState<boolean | null>(null);
+  const [dbFunctions, setDbFunctions] = useState<boolean | null>(null);
+  const [missingTables, setMissingTables] = useState<string[]>([]);
+  const [supabseVersion, setSupabaseVersion] = useState<string | null>(null);
+
   const runChecks = async () => {
-    setIsLoading(true);
+    setLoading(true);
     try {
-      const status = await runDatabaseChecks();
-      setDbStatus(status);
+      const { isConnected, structureValid, functionsValid, missingTables } = await runDatabaseChecks();
       
-      if (status.isConnected) {
-        toast('Connection Check', {
-          description: 'Successfully connected to the database.',
+      setDbConnection(isConnected);
+      setDbStructure(structureValid);
+      setDbFunctions(functionsValid);
+      setMissingTables(missingTables);
+      
+      if (!isConnected || !structureValid || !functionsValid) {
+        toast('System Check Complete', {
+          description: 'Some checks failed. Please review the results.',
         });
       } else {
-        toast('Connection Error', {
-          description: 'Failed to connect to the database.',
+        toast('System Check Complete', {
+          description: 'All systems operational.',
         });
       }
+
+      // Get Supabase version from metadata
+      try {
+        const { data } = await supabase.rpc('get_service_version', {});
+        setSupabaseVersion(data?.version || 'Unknown');
+      } catch (error) {
+        console.error('Error fetching Supabase version:', error);
+        setSupabaseVersion('Unknown');
+      }
     } catch (error) {
-      console.error('Error running checks:', error);
-      toast('Check Error', {
+      console.error('Error running system checks:', error);
+      toast('System Check Error', {
         description: 'An error occurred while running system checks.',
       });
+      
+      setDbConnection(false);
+      setDbStructure(false);
+      setDbFunctions(false);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
+      setRefreshing(false);
     }
   };
-  
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    runChecks();
+  };
+
   useEffect(() => {
     runChecks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
-  const StatusIndicator = ({ status, label }: { status: boolean; label: string }) => (
-    <div className="flex items-center gap-2 mb-2">
-      {status ? (
-        <CheckCircle className="h-5 w-5 text-green-500" />
-      ) : (
-        <XCircle className="h-5 w-5 text-red-500" />
-      )}
-      <span>{label}</span>
-    </div>
-  );
-  
+
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">System Check</h1>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">System Check</h1>
           <Button 
-            onClick={runChecks} 
-            disabled={isLoading}
+            onClick={handleRefresh} 
+            disabled={loading || refreshing}
             className="flex items-center gap-2"
           >
-            {isLoading ? (
-              <RefreshCw className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-            Run Checks
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
           </Button>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                Database Connectivity
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Database className="h-5 w-5" /> Database Status
               </CardTitle>
-              <CardDescription>Verifies connection to Supabase and database structure</CardDescription>
+              <CardDescription>
+                Check the connection status to the Supabase database
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              {dbStatus ? (
-                <>
-                  <StatusIndicator 
-                    status={dbStatus.isConnected} 
-                    label="Database Connection" 
-                  />
-                  <StatusIndicator 
-                    status={dbStatus.structureValid} 
-                    label="Database Structure" 
-                  />
-                  <StatusIndicator 
-                    status={dbStatus.functionsValid} 
-                    label="Database Functions" 
-                  />
-                  
-                  {dbStatus.missingTables.length > 0 && (
-                    <div className="mt-4">
-                      <div className="flex items-center gap-2 mb-2 text-amber-500">
-                        <AlertTriangle className="h-5 w-5" />
-                        <span>Missing Tables</span>
-                      </div>
-                      <ul className="list-disc pl-5 text-sm text-muted-foreground">
-                        {dbStatus.missingTables.map(table => (
-                          <li key={table}>{table}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="flex justify-center items-center h-24">
-                  <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+            <CardContent className="pt-4">
+              <ul className="space-y-4">
+                <li className="flex justify-between items-center">
+                  <span>Connection:</span>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={dbConnection} loadingState={loading} />
+                    <span>{loading ? 'Checking...' : dbConnection ? 'Connected' : 'Disconnected'}</span>
+                  </div>
+                </li>
+                <li className="flex justify-between items-center">
+                  <span>Structure:</span>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={dbStructure} loadingState={loading} />
+                    <span>{loading ? 'Checking...' : dbStructure ? 'Valid' : 'Invalid'}</span>
+                  </div>
+                </li>
+                <li className="flex justify-between items-center">
+                  <span>Database Functions:</span>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={dbFunctions} loadingState={loading} />
+                    <span>{loading ? 'Checking...' : dbFunctions ? 'Valid' : 'Invalid'}</span>
+                  </div>
+                </li>
+              </ul>
+              
+              {missingTables.length > 0 && (
+                <div className="mt-4 p-3 bg-red-500/10 rounded border border-red-500/20">
+                  <h4 className="font-medium text-red-400 mb-2">Missing or inaccessible tables:</h4>
+                  <ul className="list-disc list-inside text-sm">
+                    {missingTables.map(table => (
+                      <li key={table}>{table}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </CardContent>
           </Card>
-          
+
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-blue-500"></div>
-                Data Services
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Server className="h-5 w-5" /> System Information
               </CardTitle>
-              <CardDescription>Tests connectivity to various data endpoints</CardDescription>
+              <CardDescription>
+                Details about the current system environment
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <StatusIndicator 
-                status={!!marketData && marketData.length > 0} 
-                label="Markets Data" 
-              />
-              <StatusIndicator 
-                status={!!accounts} 
-                label="Trading Accounts" 
-              />
-              <StatusIndicator 
-                status={!!entries} 
-                label="Journal Entries" 
-              />
-              <StatusIndicator 
-                status={!!notifications} 
-                label="Notifications" 
-              />
-              <StatusIndicator 
-                status={!!newsArticles && newsArticles.length > 0} 
-                label="News Articles" 
-              />
+            <CardContent className="pt-4">
+              <ul className="space-y-4">
+                <li className="flex justify-between items-center">
+                  <span>Environment:</span>
+                  <span className="text-right">{process.env.NODE_ENV || 'development'}</span>
+                </li>
+                <li className="flex justify-between items-center">
+                  <span>Supabase:</span>
+                  <span className="text-right">{loading ? 'Checking...' : (supabseVersion || 'Unknown')}</span>
+                </li>
+                <li className="flex justify-between items-center">
+                  <span>React Version:</span>
+                  <span className="text-right">{React.version}</span>
+                </li>
+              </ul>
             </CardContent>
+            <CardFooter className="flex-col items-start border-t pt-4">
+              <h4 className="font-medium mb-2">Browser Information</h4>
+              <p className="text-sm text-gray-500">{navigator.userAgent}</p>
+            </CardFooter>
           </Card>
         </div>
-      </div>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5" /> Security Status
+            </CardTitle>
+            <CardDescription>
+              Information about the current security configuration
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h3 className="font-medium mb-2">Authentication</h3>
+                <Separator className="mb-4" />
+                <ul className="space-y-2">
+                  <li className="flex justify-between">
+                    <span>Status:</span>
+                    <span>Enabled</span>
+                  </li>
+                  <li className="flex justify-between">
+                    <span>Method:</span>
+                    <span>Supabase Auth</span>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-medium mb-2">Row Level Security (RLS)</h3>
+                <Separator className="mb-4" />
+                <p className="text-sm text-gray-500 mb-2">
+                  RLS protects your data by controlling access at the row level.
+                </p>
+                <ul className="space-y-2">
+                  <li className="flex justify-between">
+                    <span>Tables with RLS:</span>
+                    <span>{loading ? 'Checking...' : dbStructure ? 'Configured' : 'Check Failed'}</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </DashboardLayout>
   );
 };

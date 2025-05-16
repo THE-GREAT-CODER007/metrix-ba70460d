@@ -14,7 +14,7 @@ export const useNewsArticles = (limit = 10, categories?: string[]) => {
         .limit(limit);
       
       if (categories && categories.length > 0) {
-        query = query.contains('categories', categories);
+        query = query.overlaps('categories', categories);
       }
       
       const { data, error } = await query;
@@ -38,6 +38,7 @@ export const useNewsArticles = (limit = 10, categories?: string[]) => {
         imageUrl: article.image_url
       })) || [];
     },
-    staleTime: 60000 // 1 minute
+    staleTime: 60000, // 1 minute
+    retry: 3
   });
 };

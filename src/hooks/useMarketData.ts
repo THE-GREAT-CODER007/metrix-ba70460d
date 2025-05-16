@@ -26,6 +26,8 @@ export const useMarketData = () => {
       }
       
       return data || [];
-    }
+    },
+    staleTime: 300000, // 5 minutes
+    retry: 3
   });
 };
