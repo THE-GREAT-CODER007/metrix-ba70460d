@@ -1,3 +1,4 @@
+
 export interface Command {
   name: string;
   description: string;
@@ -63,6 +64,22 @@ export const commands: Record<string, Command> = {
     category: 'ui',
     role: 'developer',
     handler: 'triggerAction'
+  },
+  status: {
+    name: 'status',
+    description: 'Check system status',
+    usage: 'status',
+    category: 'system',
+    role: 'user',
+    handler: 'checkSystemStatus'
+  },
+  dbcheck: {
+    name: 'dbcheck',
+    description: 'Check database connection',
+    usage: 'dbcheck',
+    category: 'database',
+    role: 'developer',
+    handler: 'checkDatabase'
   }
 };
 

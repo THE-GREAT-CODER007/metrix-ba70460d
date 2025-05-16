@@ -15,6 +15,7 @@ import Analytics from "./pages/Analytics";
 import News from "./pages/News";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
+import SystemCheck from "./pages/SystemCheck";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/news" element={<News />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/system-check" element={<SystemCheck />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { AreaChart, BarChart3, ArrowRight } from 'lucide-react';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-metrix-dark">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted flex flex-col">
       <header className="border-b border-gray-800">
         <div className="container mx-auto py-4 px-6 flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -24,7 +23,9 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="flex-1">
+      <main className="flex-1 container max-w-7xl mx-auto px-4 py-8">
+        <SystemStatusBanner />
+        
         <section className="container mx-auto py-16 px-6 flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 mb-10 md:mb-0 md:pr-10">
             <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gradient leading-tight">
