@@ -52,8 +52,9 @@ export const validateDatabaseStructure = async (): Promise<{isValid: boolean; mi
   // Check each table by trying to select a single row
   for (const table of tables) {
     try {
+      // Use type assertion to satisfy TypeScript
       const { error } = await supabase
-        .from(table)
+        .from(table as any)
         .select('id')
         .limit(1);
       

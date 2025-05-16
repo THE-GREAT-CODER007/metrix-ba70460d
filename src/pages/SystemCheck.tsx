@@ -58,12 +58,21 @@ const SystemCheck = () => {
         });
       }
 
-      // Get Supabase version from metadata
+      // Get Supabase version info (just use a string directly since we don't have a get_service_version function)
       try {
-        const { data } = await supabase.rpc('get_service_version', {});
-        setSupabaseVersion(data?.version || 'Unknown');
+        // Instead of trying to call a non-existent function, we'll just use a metadata query
+        const { data, error } = await supabase
+          .from('markets')
+          .select('created_at')
+          .limit(1);
+        
+        if (!error) {
+          setSupabaseVersion('Connected');
+        } else {
+          setSupabaseVersion('Unknown');
+        }
       } catch (error) {
-        console.error('Error fetching Supabase version:', error);
+        console.error('Error checking Supabase connection:', error);
         setSupabaseVersion('Unknown');
       }
     } catch (error) {
